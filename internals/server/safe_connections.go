@@ -31,6 +31,10 @@ func (s *SafeConnections) Write(id uint, conn net.Conn) {
 	s.connections[id] = conn
 }
 
+func (s *SafeConnections) Count() uint {
+	return uint(len(s.connections))
+}
+
 func (s *SafeConnections) GetAllConnections() map[uint]net.Conn {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
