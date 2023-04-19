@@ -7,7 +7,9 @@ import (
 )
 
 type Configs struct {
-	PlayersInRoomCount uint `mapstructure:"PLAYERS_IN_ROOM_COUNT"`
+	PlayersInRoomCount uint   `mapstructure:"PLAYERS_IN_ROOM_COUNT"`
+	ServerIP           string `mapstructure:"SERVER_IP"`
+	ServerPort         uint   `mapstructure:"SERVER_PORT"`
 }
 
 func LoadConfigs(path, name, format string) (Configs, error) {

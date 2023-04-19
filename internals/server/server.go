@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"loveLetterBoardGame/internals/configs"
 	"net"
 )
 
@@ -10,10 +11,11 @@ type Server struct {
 	port        int
 	listener    net.Listener
 	connections SafeConnections
+	config      configs.Configs
 }
 
-func NewServer(ip string, port int) Server {
-	return Server{ip: ip, port: port, connections: NewSafeConnections()}
+func NewServer(ip string, port int, conf configs.Configs) Server {
+	return Server{ip: ip, port: port, connections: NewSafeConnections(), config: conf}
 }
 
 func (s *Server) listen() (func() error, error) {
