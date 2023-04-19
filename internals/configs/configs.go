@@ -2,7 +2,6 @@ package configs
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/viper"
 )
@@ -13,18 +12,15 @@ type Configs struct {
 
 func LoadConfigs(path, name, format string) (Configs, error) {
 	ret := Configs{}
-	viper.AddConfigPath(path)
-	viper.SetConfigName(name)
-	viper.SetConfigType(format)
-
+	viper.SetConfigFile(fmt.Sprintf("%s/%s.%s", path, name, format))
 	viper.AutomaticEnv()
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		fmt.Println("fatal error config file: default \n", err)
-		os.Exit(1)
+	if err := viper.ReadInConfig(); err != nil {
+		return ret, fmt.Errorf("error loading config file: %v", err)
 	}
-	err = viper.Unmarshal(&ret)
+	if err := viper.Unmarshal(&ret); err != nil {
+		return ret, fmt.Errorf("error unmarshaling config: %v", err)
+	}
 
 	return ret, nil
 }

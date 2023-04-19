@@ -8,18 +8,16 @@ import (
 )
 
 func TestLoadConfigs(t *testing.T) {
-	conf, err := LoadConfigs("./testdata/", "testconfigs", "env")
-	assert.NoError(t, err)
+	t.Run("load config from file", func(t *testing.T) {
+		conf, err := LoadConfigs("./testdata", "testconfigs", "env")
+		assert.NoError(t, err)
+		assert.Equal(t, uint(4), conf.PlayersInRoomCount)
+	})
 
-	var expected uint = 4
-	assert.Equal(t, conf.PlayersInRoomCount, expected)
-}
-
-func TestLoadConfigsWithEnv(t *testing.T) {
-	os.Setenv("PLAYERS_IN_ROOM_COUNT", "5")
-	conf, err := LoadConfigs("./testdata/", "testconfigs", "env")
-	assert.NoError(t, err)
-
-	var expected uint = 5
-	assert.Equal(t, conf.PlayersInRoomCount, expected)
+	t.Run("load config from env", func(t *testing.T) {
+		os.Setenv("PLAYERS_IN_ROOM_COUNT", "5")
+		conf, err := LoadConfigs("./testdata", "testconfigs", "env")
+		assert.NoError(t, err)
+		assert.Equal(t, uint(5), conf.PlayersInRoomCount)
+	})
 }
