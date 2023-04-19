@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +15,6 @@ func TestNewServer(t *testing.T) {
 	s := NewServer(ip, port)
 	assert.Equal(t, ip, s.ip)
 	assert.Equal(t, port, s.port)
-	assert.NotNil(t, s.connections)
 }
 
 func TestServer_listen(t *testing.T) {
@@ -23,20 +23,26 @@ func TestServer_listen(t *testing.T) {
 	s := NewServer(ip, port)
 
 	// Test successful listen
-	done := make(chan bool)
-	go func() {
-		close(done)
-	}()
-	defer func() {
-		<-done
-	}()
-
-	closeFn := s.listen()
+	closer, err := s.listen()
+	assert.NoError(t, err)
 	assert.NotNil(t, s.listener)
 
 	// Test listener closing
-	closeFn()
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
+	assert.NoError(t, err)
+	assert.NotNil(t, conn)
+
+	closer()
+
+	// Wait for the listener to be closed before checking if a connection can be established
+	for i := 0; i < 10; i++ {
+		conn, err = net.Dial("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
+		if err != nil {
+			break
+		}
+		conn.Close()
+		time.Sleep(time.Millisecond * 100)
+	}
 	assert.Error(t, err)
 	assert.Nil(t, conn)
 }
@@ -47,9 +53,10 @@ func TestServer_listen_error(t *testing.T) {
 	s := NewServer(ip, port)
 
 	// Test listen error
-	assert.Panics(t, func() {
-		s.listen()
-	})
+	closer, err := s.listen()
+	assert.Error(t, err)
+	assert.Nil(t, closer)
+	assert.Contains(t, err.Error(), "lookup")
 }
 
 func TestServer_GetAllConnections(t *testing.T) {
@@ -67,6 +74,6 @@ func TestServer_GetAllConnections(t *testing.T) {
 	}
 
 	// Test getting all connections
-	got := s.GetAllConnections()
+	got := s.connections.GetAllConnections()
 	assert.Equal(t, expected, got)
 }

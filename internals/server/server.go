@@ -16,13 +16,13 @@ func NewServer(ip string, port int) Server {
 	return Server{ip: ip, port: port, connections: NewSafeConnections()}
 }
 
-func (s *Server) listen() error {
+func (s *Server) listen() (func() error, error) {
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
 	if err != nil {
-		return fmt.Errorf("error listening: %w", err)
+		return nil, fmt.Errorf("error listening: %w", err)
 	}
-	return nil
+	return s.listener.Close, nil
 }
 
 func (s *Server) shutdown() error {
