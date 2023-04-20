@@ -15,7 +15,7 @@ func NewSafeConnections() SafeConnections {
 	return SafeConnections{connections: make(map[uint]net.Conn), lock: sync.RWMutex{}}
 }
 
-func (s *SafeConnections) Read(id uint) (net.Conn, error) {
+func (s *SafeConnections) Get(id uint) (net.Conn, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	conn, ok := s.connections[id]
@@ -25,7 +25,7 @@ func (s *SafeConnections) Read(id uint) (net.Conn, error) {
 	return conn, nil
 }
 
-func (s *SafeConnections) Write(id uint, conn net.Conn) {
+func (s *SafeConnections) Set(id uint, conn net.Conn) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.connections[id] = conn

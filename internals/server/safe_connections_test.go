@@ -16,16 +16,16 @@ func TestSafeConnections_Read(t *testing.T) {
 	sc := NewSafeConnections()
 	id := uint(1)
 	expected := &net.TCPConn{}
-	sc.Write(id, expected)
+	sc.Set(id, expected)
 
 	// Test reading a valid connection
-	got, err := sc.Read(id)
+	got, err := sc.Get(id)
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
 	assert.Equal(t, got, expected)
 
 	// Test reading an invalid connection
-	invalidConn, err := sc.Read(id + 1)
+	invalidConn, err := sc.Get(id + 1)
 	assert.Nil(t, invalidConn)
 }
 
@@ -35,12 +35,12 @@ func TestSafeConnections_Write(t *testing.T) {
 	conn := &net.TCPConn{}
 
 	// Test writing a new connection
-	sc.Write(id, conn)
+	sc.Set(id, conn)
 	assert.Equal(t, conn, sc.connections[id])
 
 	// Test overwriting an existing connection
 	newConn := &net.UDPConn{}
-	sc.Write(id, newConn)
+	sc.Set(id, newConn)
 	assert.Equal(t, newConn, sc.connections[id])
 }
 
@@ -48,8 +48,8 @@ func TestSafeConnections_GetAllConnections(t *testing.T) {
 	sc := NewSafeConnections()
 	conn1 := &net.TCPConn{}
 	conn2 := &net.UDPConn{}
-	sc.Write(1, conn1)
-	sc.Write(2, conn2)
+	sc.Set(1, conn1)
+	sc.Set(2, conn2)
 
 	// Test getting all connections
 	allConns := sc.GetAllConnections()

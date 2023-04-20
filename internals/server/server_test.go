@@ -159,7 +159,7 @@ func TestServer_GetAllConnections(t *testing.T) {
 		3: &net.TCPConn{},
 	}
 	for id, conn := range expected {
-		s.connections.Write(id, conn)
+		s.connections.Set(id, conn)
 	}
 
 	// Test getting all connections

@@ -30,20 +30,15 @@ func (s *Server) listen() (func() error, error) {
 func (s *Server) acceptClients() error {
 	for {
 		if s.connections.Count() >= s.config.PlayersInRoomCount {
-			// We have enough players to start a game
 			break
 		}
 		conn, err := s.listener.Accept()
 		if err != nil {
 			return fmt.Errorf("error accepting client: %w", err)
 		}
-		s.connections.Write(s.connections.Count()+1, conn)
+		s.connections.Set(s.connections.Count()+1, conn)
 	}
 	return nil
-}
-
-func (s *Server) runGame() {
-
 }
 
 func (s *Server) Start() error {
@@ -58,8 +53,6 @@ func (s *Server) Start() error {
 		return err
 	}
 
-	// TODO: Handle game logic for this group of clients
-	s.runGame()
 	return nil
 }
 
