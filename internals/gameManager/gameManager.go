@@ -19,6 +19,6 @@ func (gm *GameManager) RunGame() error {
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
