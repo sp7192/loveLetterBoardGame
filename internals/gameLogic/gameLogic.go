@@ -1,8 +1,15 @@
 package gamelogic
 
+import "loveLetterBoardGame/internals/gameLogic/deck"
+
 type GameLogic struct {
+	players []Player
+	deck    deck.Deck
 }
 
-func NewGameLogic() GameLogic {
-	return GameLogic{}
+func NewGameLogic(mode string, players []Player) GameLogic {
+	
+	return GameLogic{
+		players: players,
+	}
 }

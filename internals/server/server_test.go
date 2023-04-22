@@ -12,19 +12,15 @@ import (
 )
 
 func TestNewServer(t *testing.T) {
-	ip := "127.0.0.1"
-	port := 8080
-	conf := configs.Configs{PlayersInRoomCount: 4} // create a mock config object
-	s := NewServer(ip, port, conf)
-	assert.Equal(t, ip, s.ip)
-	assert.Equal(t, port, s.port)
+	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8080} // create a mock config object
+	s := NewServer(conf)
+	assert.Equal(t, conf.ServerIP, s.ip)
+	assert.Equal(t, conf.ServerPort, int(s.port))
 }
 
 func TestServer_listen(t *testing.T) {
-	ip := "127.0.0.1"
-	port := 8080
-	conf := configs.Configs{PlayersInRoomCount: 4} // create a mock config object
-	s := NewServer(ip, port, conf)
+	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8080} // create a mock config object
+	s := NewServer(conf)
 
 	// Test successful listen
 	closer, err := s.listen()
@@ -52,11 +48,8 @@ func TestServer_listen(t *testing.T) {
 }
 
 func TestServer_listen_error(t *testing.T) {
-	ip := "invalid_ip"
-	port := 8080
-
-	conf := configs.Configs{PlayersInRoomCount: 4} // create a mock config object
-	s := NewServer(ip, port, conf)
+	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8080} // create a mock config object
+	s := NewServer(conf)
 
 	// Test listen error
 	closer, err := s.listen()
@@ -67,11 +60,10 @@ func TestServer_listen_error(t *testing.T) {
 
 func TestStart(t *testing.T) {
 	// Create a new Configs instance
-	conf := configs.Configs{}
-	conf.PlayersInRoomCount = 2
+	conf := configs.Configs{PlayersInRoomCount: 2, ServerIP: "127.0.0.1", ServerPort: 8080} // create a mock config object
 
 	// Create a new Server instance
-	srv := NewServer("localhost", 1234, conf)
+	srv := NewServer(conf)
 
 	// Use a channel to signal when acceptClients has finished accepting connections
 	done := make(chan struct{})
@@ -108,11 +100,14 @@ func TestStart(t *testing.T) {
 
 func TestAcceptClients(t *testing.T) {
 	// Create a new Configs instance
-	conf := configs.Configs{}
-	conf.PlayersInRoomCount = 2
+	conf := configs.Configs{
+		PlayersInRoomCount: 2,
+		ServerIP:           "localhost",
+		ServerPort:         1234,
+	}
 
 	// Create a new Server instance
-	srv := NewServer("localhost", 1234, conf)
+	srv := NewServer(conf)
 	closer, err := srv.listen()
 	assert.NoError(t, err)
 	defer closer()
@@ -148,10 +143,8 @@ func TestAcceptClients(t *testing.T) {
 }
 
 func TestServer_GetAllConnections(t *testing.T) {
-	ip := "127.0.0.1"
-	port := 8080
-	conf := configs.Configs{PlayersInRoomCount: 4} // create a mock config object
-	s := NewServer(ip, port, conf)
+	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8080} // create a mock config object
+	s := NewServer(conf)
 
 	expected := map[uint]net.Conn{
 		1: &net.TCPConn{},

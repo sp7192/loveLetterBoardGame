@@ -2,7 +2,7 @@ package gamelogic
 
 type Player struct {
 	ID            uint
-	hand          Hand
 	totalScore    uint
+	hand          Hand
 	isInThisRound bool
 }

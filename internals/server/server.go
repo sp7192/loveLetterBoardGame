@@ -14,8 +14,8 @@ type Server struct {
 	config      configs.Configs
 }
 
-func NewServer(ip string, port int, conf configs.Configs) Server {
-	return Server{ip: ip, port: port, connections: NewSafeConnections(), config: conf}
+func NewServer(conf configs.Configs) Server {
+	return Server{ip: conf.ServerIP, port: int(conf.ServerPort), connections: NewSafeConnections(), config: conf}
 }
 
 func (s *Server) listen() (func() error, error) {
