@@ -1,5 +1,8 @@
 package gamelogic
 
 type Player struct {
-	hand []Card
+	ID            uint
+	hand          Hand
+	totalScore    uint
+	isInThisRound bool
 }
