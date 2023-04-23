@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"loveLetterBoardGame/internals/configs"
+	gamelogic "loveLetterBoardGame/internals/gameLogic"
+	gameloop "loveLetterBoardGame/internals/gameLoop"
 	"loveLetterBoardGame/internals/server"
 )
 
@@ -20,4 +22,8 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	logic := gamelogic.NewGameLogic("", []gamelogic.Player{})
+
+	loop := gameloop.NewGameLoop(&srv, &logic, &conf)
+	loop.BeginTurn()
 }
