@@ -1,6 +1,6 @@
 package gamelogic
 
-import "loveLetterBoardGame/internals/gameLogic/deck"
+import "loveLetterBoardGame/internals/gamelogic/deck"
 
 type GameLogic struct {
 	players []Player
@@ -8,7 +8,7 @@ type GameLogic struct {
 }
 
 func NewGameLogic(mode string, players []Player) GameLogic {
-	
+
 	return GameLogic{
 		players: players,
 	}

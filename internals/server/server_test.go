@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"loveLetterBoardGame/internals/configs"
 	"net"
+	"reflect"
 	"testing"
 	"time"
 
@@ -12,14 +13,14 @@ import (
 )
 
 func TestNewServer(t *testing.T) {
-	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8080} // create a mock config object
+	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8200} // create a mock config object
 	s := NewServer(conf)
 	assert.Equal(t, conf.ServerIP, s.ip)
-	assert.Equal(t, conf.ServerPort, int(s.port))
+	assert.Equal(t, conf.ServerPort, uint(s.port))
 }
 
 func TestServer_listen(t *testing.T) {
-	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8080} // create a mock config object
+	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8000} // create a mock config object
 	s := NewServer(conf)
 
 	// Test successful listen
@@ -48,14 +49,35 @@ func TestServer_listen(t *testing.T) {
 }
 
 func TestServer_listen_error(t *testing.T) {
-	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8080} // create a mock config object
+	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 9200} // create a mock config object
 	s := NewServer(conf)
+	closer, err := s.listen()
 
 	// Test listen error
-	closer, err := s.listen()
+	closer, err = s.listen()
 	assert.Error(t, err)
-	assert.Nil(t, closer)
-	assert.Contains(t, err.Error(), "lookup")
+	closer()
+}
+
+func TestGetClientsIds(t *testing.T) {
+
+	// Create a mock server with some connections
+	server := &Server{
+		config:      configs.Configs{PlayersInRoomCount: 2},
+		connections: NewSafeConnections(),
+	}
+
+	server.connections.Set(1, &net.TCPConn{})
+	server.connections.Set(2, &net.TCPConn{})
+
+	// Call the method being tested
+	result := server.GetClientsIds()
+
+	// Check that the result is as expected
+	expected := []uint{1, 2}
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("Expected %v, but got %v", expected, result)
+	}
 }
 
 func TestStart(t *testing.T) {
@@ -74,11 +96,11 @@ func TestStart(t *testing.T) {
 	}()
 
 	// Connect two clients to the server
-	conn1, err := net.Dial("tcp", "localhost:1234")
+	conn1, err := net.Dial("tcp", "localhost:8080")
 	require.NoError(t, err, "Failed to connect first client")
 	defer conn1.Close()
 
-	conn2, err := net.Dial("tcp", "localhost:1234")
+	conn2, err := net.Dial("tcp", "localhost:8080")
 	require.NoError(t, err, "Failed to connect second client")
 	defer conn2.Close()
 
@@ -143,7 +165,7 @@ func TestAcceptClients(t *testing.T) {
 }
 
 func TestServer_GetAllConnections(t *testing.T) {
-	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8080} // create a mock config object
+	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 9000} // create a mock config object
 	s := NewServer(conf)
 
 	expected := map[uint]net.Conn{

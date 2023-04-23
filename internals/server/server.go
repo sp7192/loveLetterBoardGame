@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"loveLetterBoardGame/internals/configs"
 	"net"
+	"sort"
 )
 
 type Server struct {
@@ -22,9 +23,14 @@ func (s *Server) listen() (func() error, error) {
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
 	if err != nil {
-		return nil, fmt.Errorf("error listening: %w", err)
+		return func() error { return nil }, fmt.Errorf("error listening: %w", err)
 	}
-	return s.listener.Close, nil
+	return func() error {
+		if s == nil || s.listener == nil {
+			return fmt.Errorf("listener is nil")
+		}
+		return s.listener.Close()
+	}, nil
 }
 
 func (s *Server) acceptClients() error {
@@ -54,6 +60,18 @@ func (s *Server) Start() error {
 	}
 
 	return nil
+}
+
+func (s *Server) GetClientsIds() []uint {
+	ret := make([]uint, 0, s.config.PlayersInRoomCount)
+	conns := s.connections.GetAllConnections()
+	for k := range conns {
+		ret = append(ret, k)
+	}
+	sort.Slice(ret, func(i, j int) bool {
+		return ret[i] < ret[j]
+	})
+	return ret
 }
 
 func (s *Server) shutdown() error {

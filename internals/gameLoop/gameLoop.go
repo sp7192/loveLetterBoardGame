@@ -2,7 +2,7 @@ package gameloop
 
 import (
 	"loveLetterBoardGame/internals/configs"
-	gamelogic "loveLetterBoardGame/internals/gameLogic"
+	gamelogic "loveLetterBoardGame/internals/gamelogic"
 	"loveLetterBoardGame/internals/server"
 )
 
