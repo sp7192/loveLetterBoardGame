@@ -8,6 +8,8 @@ import (
 
 type Configs struct {
 	ClientID   uint   `mapstructure:"CLIENT_ID"`
+	ClientName string `mapstructure:"CLIENT_NAME"`
+
 	ServerIP   string `mapstructure:"SERVER_IP"`
 	ServerPort uint   `mapstructure:"SERVER_PORT"`
 }
