@@ -21,7 +21,9 @@ func NewServer(conf configs.Configs) Server {
 
 func (s *Server) listen() (func() error, error) {
 	var err error
-	s.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", s.ip, s.port))
+	addr := fmt.Sprintf("%s:%d", s.ip, s.port)
+	fmt.Printf("listening on %s\n", addr)
+	s.listener, err = net.Listen("tcp", addr)
 	if err != nil {
 		return func() error { return nil }, fmt.Errorf("error listening: %w", err)
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"loveLetterClient/internals/client"
 	"loveLetterClient/internals/configs"
 )
 
@@ -13,4 +14,6 @@ func main() {
 	}
 
 	fmt.Printf("Client id is : %d\n", conf.ClientID)
+	cl := client.NewClient(&conf)
+	cl.Run()
 }

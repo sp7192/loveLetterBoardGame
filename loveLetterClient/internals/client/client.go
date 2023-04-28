@@ -31,7 +31,7 @@ func (c *Client) connectToServer() bool {
 func (c *Client) tryConnection() bool {
 	t := time.Now()
 	isConnected := c.connectToServer()
-	for isConnected && time.Now().Before(t.Add(3*time.Second)) { // to be handled in config
+	for !isConnected && time.Now().Before(t.Add(3*time.Second)) { // to be handled in config
 		time.Sleep(100 * time.Millisecond)
 		fmt.Printf("Retrying to connect to server\n")
 		isConnected = c.connectToServer()
@@ -39,15 +39,17 @@ func (c *Client) tryConnection() bool {
 	return isConnected
 }
 
-func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) {
+func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) <-chan string {
+	ret := make(chan string)
 	go func() {
 		defer wg.Done()
 		buffer := make([]byte, 4096)
+
 		for {
 			select {
 			case <-done:
 				return
-			default:
+			case <-time.After(1 * time.Millisecond):
 			}
 
 			c.conn.SetReadDeadline(time.Now().Add(1 * time.Second))
@@ -60,9 +62,12 @@ func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) {
 				fmt.Println("Error reading:", err.Error())
 				return
 			}
+
 			fmt.Println("Server >> ", string(buffer[:l]))
+			ret <- string(buffer[:l])
 		}
 	}()
+	return ret
 }
 
 func (c *Client) Run() {
@@ -74,6 +79,7 @@ func (c *Client) Run() {
 	defer c.conn.Close()
 
 	wg := sync.WaitGroup{}
+	wg.Add(1)
 	done := make(chan struct{})
 	defer close(done)
 
