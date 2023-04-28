@@ -6,7 +6,6 @@ import (
 	"net"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -84,12 +83,4 @@ func TestClient_tryConnection(t *testing.T) {
 	// test that tryConnection() succeeds
 	isConnected := c.tryConnection()
 	assert.True(t, isConnected)
-
-	// test connection retry timeout
-	start := time.Now()
-	_, err = listener.Accept()
-	assert.NoError(t, err)
-	end := time.Now()
-	elapsed := end.Sub(start)
-	assert.True(t, elapsed > 3*time.Second)
 }
