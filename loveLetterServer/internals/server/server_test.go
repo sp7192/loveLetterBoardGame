@@ -120,6 +120,42 @@ func TestStart(t *testing.T) {
 	assert.ErrorIs(t, srv.shutdown(), net.ErrClosed, "Expected the listener to be closed")
 }
 
+func TestSendMessagesToClients(t *testing.T) {
+	server := &Server{
+		messageChannel: make(chan ServerMessage),
+		connections:    NewSafeConnections(),
+	}
+
+	clientConn, serverConn := net.Pipe()
+	var clientID uint = 1
+	server.connections.Set(clientID, serverConn)
+	server.sendMessagesToClients()
+
+	ch := make(chan func(), 2)
+
+	// Add the read operation to the channel.
+	ch <- func() {
+		buf := make([]byte, 1024)
+		n, err := clientConn.Read(buf)
+		assert.NoError(t, err)
+		assert.Equal(t, buf[:n], "Hello, client!")
+	}
+
+	// Add the write operation to the channel.
+	ch <- func() {
+		msg := ServerMessage{toClientId: clientID, message: "Hello, client!"}
+		server.messageChannel <- msg
+	}
+
+	// Run the functions on separate goroutines.
+	for i := 0; i < 2; i++ {
+		go func() {
+			fn := <-ch
+			fn()
+		}()
+	}
+}
+
 func TestAcceptClients(t *testing.T) {
 	// Create a new Configs instance
 	conf := configs.Configs{
