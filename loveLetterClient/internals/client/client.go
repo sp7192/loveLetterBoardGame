@@ -49,10 +49,10 @@ func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) <-chan
 			select {
 			case <-done:
 				return
-			case <-time.After(1 * time.Millisecond):
+			default:
 			}
 
-			c.conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+			c.conn.SetReadDeadline(time.Now().Add(5 * time.Second))
 			l, err := c.conn.Read(buffer)
 			if err != nil {
 				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {

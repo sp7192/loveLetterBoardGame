@@ -8,15 +8,21 @@ import (
 )
 
 type Server struct {
-	ip          string
-	port        int
-	listener    net.Listener
-	connections SafeConnections
-	config      configs.Configs
+	ip             string
+	port           int
+	listener       net.Listener
+	connections    SafeConnections
+	config         configs.Configs
+	messageChannel chan ServerMessage
 }
 
 func NewServer(conf configs.Configs) Server {
-	return Server{ip: conf.ServerIP, port: int(conf.ServerPort), connections: NewSafeConnections(), config: conf}
+	return Server{ip: conf.ServerIP,
+		port:           int(conf.ServerPort),
+		connections:    NewSafeConnections(),
+		config:         conf,
+		messageChannel: make(chan ServerMessage),
+	}
 }
 
 func (s *Server) listen() (func() error, error) {
@@ -44,9 +50,28 @@ func (s *Server) acceptClients() error {
 		if err != nil {
 			return fmt.Errorf("error accepting client: %w", err)
 		}
-		s.connections.Set(s.connections.Count()+1, conn)
+		id := s.connections.Count() + 1
+		s.connections.Set(id, conn)
+		s.messageChannel <- ServerMessage{id, fmt.Sprintf("Your id set by server is : %d", id)}
 	}
 	return nil
+}
+
+func (s *Server) sendMessagesToClients() {
+	go func() {
+		for {
+			msg := <-s.messageChannel
+			conn, err := s.connections.Get(msg.toClientId)
+			if err != nil {
+				fmt.Printf("Errror in reading connection :%s\n", err.Error())
+				continue
+			}
+			if err := writeToConnection(conn, []byte(msg.message)); err != nil {
+				fmt.Printf("Error in sending message: %s\n", err.Error())
+				continue
+			}
+		}
+	}()
 }
 
 func (s *Server) Start() error {
@@ -56,6 +81,7 @@ func (s *Server) Start() error {
 	}
 	defer closer()
 
+	s.sendMessagesToClients()
 	err = s.acceptClients()
 	if err != nil {
 		return err
