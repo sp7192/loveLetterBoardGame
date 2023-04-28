@@ -22,8 +22,8 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-
-	logic := gamelogic.NewGameLogic("", []gamelogic.Player{})
+	players := gamelogic.CreatePlayersFromIDs(srv.GetClientsIds())
+	logic := gamelogic.NewGameLogic("", players)
 
 	loop := gameloop.NewGameLoop(&srv, &logic, &conf)
 	loop.BeginTurn()
