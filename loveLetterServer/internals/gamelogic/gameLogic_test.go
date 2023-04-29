@@ -17,7 +17,7 @@ func TestGameLogic_PreparePhase(t *testing.T) {
 		deck: deck.NewDeck(cards),
 	}
 
-	firstCount := g.deck.Count()
+	expectedCounts := g.deck.Count() - len(g.players)
 
 	// Prepare the game phase
 	err := g.PreparePhase()
@@ -27,7 +27,6 @@ func TestGameLogic_PreparePhase(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	expectedCounts := firstCount - len(g.players)
 	// Check that the deck was shuffled
 	if g.deck.Count() != expectedCounts {
 		t.Errorf("expected %d cards in deck, got %d", expectedCounts, g.deck.Count())
