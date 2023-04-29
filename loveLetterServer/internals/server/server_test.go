@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"loveLetterBoardGame/internals/configs"
+	"loveLetterBoardGame/models"
 	"net"
 	"reflect"
 	"testing"
@@ -122,7 +123,7 @@ func TestStart(t *testing.T) {
 
 func TestSendMessagesToClients(t *testing.T) {
 	server := &Server{
-		messageChannel: make(chan ServerMessage),
+		messageChannel: make(chan models.ServerMessage),
 		connections:    NewSafeConnections(),
 	}
 
@@ -143,7 +144,7 @@ func TestSendMessagesToClients(t *testing.T) {
 
 	// Add the write operation to the channel.
 	ch <- func() {
-		msg := ServerMessage{toClientId: clientID, message: "Hello, client!"}
+		msg := models.ServerMessage{toClientId: clientID, message: "Hello, client!"}
 		server.messageChannel <- msg
 	}
 

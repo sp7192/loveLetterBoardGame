@@ -16,14 +16,5 @@ func NewGameLoop(s *server.Server, g *gamelogic.GameLogic, c *configs.Configs) G
 	return GameLoop{server: s, gameLogic: g, configs: c}
 }
 
-func (g *GameLoop) RunGame() error {
-	err := g.server.Start()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (g *GameLoop) BeginTurn() {
 }

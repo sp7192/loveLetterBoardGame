@@ -6,9 +6,13 @@ import (
 	"loveLetterBoardGame/internals/gamelogic"
 	"loveLetterBoardGame/internals/gameloop"
 	"loveLetterBoardGame/internals/server"
+	"math/rand"
+	"time"
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	conf, err := configs.LoadConfigs("../internals/configs", "configs", "env")
 	if err != nil {
 		log.Fatal(err.Error())

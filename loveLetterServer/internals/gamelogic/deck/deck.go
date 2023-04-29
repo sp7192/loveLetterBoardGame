@@ -2,6 +2,7 @@ package deck
 
 import (
 	"loveLetterBoardGame/internals/gamelogic/card"
+	"math/rand"
 )
 
 type Deck struct {
@@ -20,4 +21,8 @@ func (d *Deck) Draw() (card.Card, bool) {
 	ret := d.cards[d.count-1]
 	d.count--
 	return ret, true
+}
+
+func (d *Deck) Shuffle() {
+	rand.Shuffle(len(d.cards), func(i, j int) { d.cards[i], d.cards[j] = d.cards[j], d.cards[i] })
 }

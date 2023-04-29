@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"loveLetterBoardGame/internals/configs"
+	"loveLetterBoardGame/models"
 	"net"
 	"sort"
 )
@@ -13,7 +14,7 @@ type Server struct {
 	listener       net.Listener
 	connections    SafeConnections
 	config         configs.Configs
-	messageChannel chan ServerMessage
+	messageChannel chan models.ServerMessage
 }
 
 func NewServer(conf configs.Configs) Server {
@@ -21,7 +22,7 @@ func NewServer(conf configs.Configs) Server {
 		port:           int(conf.ServerPort),
 		connections:    NewSafeConnections(),
 		config:         conf,
-		messageChannel: make(chan ServerMessage),
+		messageChannel: make(chan models.ServerMessage),
 	}
 }
 
@@ -52,7 +53,7 @@ func (s *Server) acceptClients() error {
 		}
 		id := s.connections.Count() + 1
 		s.connections.Set(id, conn)
-		s.messageChannel <- ServerMessage{id, fmt.Sprintf("Your id set by server is : %d", id)}
+		s.messageChannel <- models.ServerMessage{ToClientId: id, Message: fmt.Sprintf("Your id set by server is : %d", id)}
 	}
 	return nil
 }
@@ -61,12 +62,12 @@ func (s *Server) sendMessagesToClients() {
 	go func() {
 		for {
 			msg := <-s.messageChannel
-			conn, err := s.connections.Get(msg.toClientId)
+			conn, err := s.connections.Get(msg.ToClientId)
 			if err != nil {
 				fmt.Printf("Errror in reading connection :%s\n", err.Error())
 				continue
 			}
-			if err := writeToConnection(conn, []byte(msg.message)); err != nil {
+			if err := writeToConnection(conn, []byte(msg.Message)); err != nil {
 				fmt.Printf("Error in sending message: %s\n", err.Error())
 				continue
 			}
