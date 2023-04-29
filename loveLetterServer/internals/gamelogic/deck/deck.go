@@ -26,3 +26,7 @@ func (d *Deck) Draw() (card.Card, bool) {
 func (d *Deck) Shuffle() {
 	rand.Shuffle(len(d.cards), func(i, j int) { d.cards[i], d.cards[j] = d.cards[j], d.cards[i] })
 }
+
+func (d *Deck) Count() int {
+	return d.count
+}
