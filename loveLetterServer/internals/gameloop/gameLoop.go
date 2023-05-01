@@ -16,5 +16,6 @@ func NewGameLoop(s *server.Server, g *gamelogic.GameLogic, c *configs.Configs) G
 	return GameLoop{server: s, gameLogic: g, configs: c}
 }
 
-func (g *GameLoop) BeginTurn() {
+func (g *GameLoop) BeginGame() {
+	g.gameLogic.PreparePhase()
 }

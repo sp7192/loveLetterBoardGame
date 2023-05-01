@@ -30,5 +30,5 @@ func main() {
 	logic := gamelogic.NewGameLogic("", players)
 
 	loop := gameloop.NewGameLoop(&srv, &logic, &conf)
-	loop.BeginTurn()
+	loop.BeginGame()
 }
