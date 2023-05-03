@@ -1,8 +1,10 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"loveLetterBoardGame/internals/configs"
+	"loveLetterBoardGame/internals/gamelogic"
 	"loveLetterBoardGame/models"
 	"net"
 	"sort"
@@ -106,6 +108,22 @@ func (s *Server) GetClientsIds() []uint {
 func (s *Server) shutdown() error {
 	if s.listener != nil {
 		return s.listener.Close()
+	}
+	return nil
+}
+
+func (s *Server) SendTo(id uint, msg string) {
+
+}
+
+func (s *Server) SendToAll(g *gamelogic.GameLogic) error {
+	data, err := json.Marshal(g)
+	if err != nil {
+		return err
+	}
+	ids := s.GetClientsIds()
+	for _, id := range ids {
+		s.SendTo(id, string(data))
 	}
 	return nil
 }
