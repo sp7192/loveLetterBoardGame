@@ -112,8 +112,12 @@ func (s *Server) shutdown() error {
 	return nil
 }
 
-func (s *Server) SendTo(id uint, msg string) {
-
+func (s *Server) SendTo(id uint, msg string) (int, error) {
+	conn, err := s.connections.Get(id)
+	if err != nil {
+		return 0, err
+	}
+	return conn.Write([]byte(msg))
 }
 
 func (s *Server) SendToAll(g *gamelogic.GameLogic) error {
