@@ -8,6 +8,7 @@ import (
 	"loveLetterBoardGame/models"
 	"net"
 	"sort"
+	"time"
 )
 
 type Server struct {
@@ -55,7 +56,7 @@ func (s *Server) acceptClients() error {
 		}
 		id := s.connections.Count() + 1
 		s.connections.Set(id, conn)
-		s.messageChannel <- models.ServerMessage{ToClientId: id, Message: fmt.Sprintf("Your id set by server is : %d", id)}
+		s.SendTo(id, fmt.Sprintf("Your id set by server is : %d", id))
 	}
 	return nil
 }
@@ -112,12 +113,17 @@ func (s *Server) shutdown() error {
 	return nil
 }
 
-func (s *Server) SendTo(id uint, msg string) (int, error) {
-	conn, err := s.connections.Get(id)
-	if err != nil {
-		return 0, err
+func (s *Server) SendToWithTimeout(id uint, msg string, timeout time.Duration) error {
+	select {
+	case s.messageChannel <- models.ServerMessage{ToClientId: id, Message: msg}:
+		return nil
+	case <-time.After(timeout):
+		return fmt.Errorf("Send time out")
 	}
-	return conn.Write([]byte(msg))
+}
+
+func (s *Server) SendTo(id uint, msg string) {
+	s.messageChannel <- models.ServerMessage{ToClientId: id, Message: msg}
 }
 
 func (s *Server) SendToAll(g *gamelogic.GameLogic) error {

@@ -31,6 +31,9 @@ func (g *GameLogic) PreparePhase() error {
 	return nil
 }
 
+func (g *GameLogic) BeginTurns() {
+}
+
 func (g *GameLogic) DrawPhase() {
 
 }

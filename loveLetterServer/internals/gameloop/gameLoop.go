@@ -19,4 +19,5 @@ func NewGameLoop(s *server.Server, g *gamelogic.GameLogic, c *configs.Configs) G
 func (g *GameLoop) BeginGame() {
 	g.gameLogic.PreparePhase()
 	g.server.SendToAll(g.gameLogic)
+	g.gameLogic.BeginTurns()
 }

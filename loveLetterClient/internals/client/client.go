@@ -63,7 +63,6 @@ func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) <-chan
 				return
 			}
 
-			fmt.Println("Server >> ", string(buffer[:l]))
 			ret <- string(buffer[:l])
 		}
 	}()
@@ -82,7 +81,16 @@ func (c *Client) Run() {
 	wg.Add(1)
 	done := make(chan struct{})
 	defer close(done)
+	msgCh := c.receiveMessage(done, &wg)
+	fmt.Printf("")
 
-	c.receiveMessage(done, &wg)
+	for {
+		select {
+		case <-done:
+			break
+		case msg := <-msgCh:
+			fmt.Printf("Server >> %s\n", msg)
+		}
+	}
 	wg.Wait()
 }
