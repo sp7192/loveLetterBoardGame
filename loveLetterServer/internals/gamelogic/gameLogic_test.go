@@ -10,14 +10,14 @@ func TestGameLogic_PreparePhase(t *testing.T) {
 	// Create a game logic instance with two players and a deck with two cards
 	cards := card.NewCardsSet("TEST")
 	g := &GameLogic{
-		players: []Player{
+		Players: []Player{
 			{ID: 1},
 			{ID: 2},
 		},
-		deck: deck.NewDeck(cards),
+		Deck: deck.NewDeck(cards),
 	}
 
-	expectedCounts := g.deck.Count() - len(g.players)
+	expectedCounts := g.Deck.Count() - len(g.Players)
 
 	// Prepare the game phase
 	err := g.PreparePhase()
@@ -28,12 +28,12 @@ func TestGameLogic_PreparePhase(t *testing.T) {
 	}
 
 	// Check that the deck was shuffled
-	if g.deck.Count() != expectedCounts {
-		t.Errorf("expected %d cards in deck, got %d", expectedCounts, g.deck.Count())
+	if g.Deck.Count() != expectedCounts {
+		t.Errorf("expected %d cards in deck, got %d", expectedCounts, g.Deck.Count())
 	}
 
 	// Check that each player has one card in their hand
-	for _, p := range g.players {
+	for _, p := range g.Players {
 		if len(p.hand.cards) != 1 {
 			t.Errorf("expected player %d to have 1 card, got %d", p.ID, len(p.hand.cards))
 		}
