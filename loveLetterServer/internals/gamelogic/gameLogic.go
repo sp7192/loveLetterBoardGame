@@ -8,8 +8,8 @@ import (
 )
 
 type GameLogic struct {
-	Players []Player  `json:"players"`
-	Deck    deck.Deck `json:"deck"`
+	Players []Player
+	Deck    deck.Deck
 }
 
 func NewGameLogic(mode string, players []Player) GameLogic {
@@ -30,6 +30,34 @@ func (g *GameLogic) PreparePhase() error {
 		g.Players[i].hand.cards = append(g.Players[i].hand.cards, card)
 	}
 	return nil
+}
+
+func (g *GameLogic) isPlayerIdValid(playerId uint) bool {
+	for _, p := range g.Players {
+		if playerId == p.ID {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *GameLogic) GetGameState(playerId uint) (GameState, error) {
+	var ret GameState
+
+	if !g.isPlayerIdValid(playerId) {
+		return ret, fmt.Errorf("Player id : %d, is invalid", playerId)
+	}
+
+	ret.DeckCardsCount = uint(g.Deck.Count())
+	for _, p := range g.Players {
+		if p.isInThisRound {
+			ret.PlayersIdInGame = append(ret.PlayersIdInGame, p.ID)
+		}
+	}
+
+	ret.PlayingPlayerId = playerId
+
+	return ret, nil
 }
 
 func (g *GameLogic) BeginTurns() {

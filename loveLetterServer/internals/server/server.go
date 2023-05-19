@@ -127,12 +127,17 @@ func (s *Server) SendTo(id uint, msg string) {
 }
 
 func (s *Server) SendToAll(g *gamelogic.GameLogic) error {
-	data, err := json.Marshal(g)
-	if err != nil {
-		return err
-	}
 	ids := s.GetClientsIds()
 	for _, id := range ids {
+		state, err := g.GetGameState(ids[0])
+		if err != nil {
+			return err
+		}
+
+		data, err := json.Marshal(state)
+		if err != nil {
+			return err
+		}
 		s.SendTo(id, string(data))
 	}
 	return nil
