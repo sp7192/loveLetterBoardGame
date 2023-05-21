@@ -129,7 +129,7 @@ func (s *Server) SendTo(id uint, msg string) {
 func (s *Server) SendToAll(g *gamelogic.GameLogic) error {
 	ids := s.GetClientsIds()
 	for _, id := range ids {
-		state, err := g.GetGameState(ids[0])
+		state, err := g.GetGameState()
 		if err != nil {
 			return err
 		}

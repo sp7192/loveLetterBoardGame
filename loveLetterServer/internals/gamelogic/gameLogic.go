@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"loveLetterBoardGame/internals/gamelogic/card"
 	"loveLetterBoardGame/internals/gamelogic/deck"
+	"math/rand"
 	"time"
 )
 
 type GameLogic struct {
-	Players []Player
-	Deck    deck.Deck
+	Players         []Player
+	Deck            deck.Deck
+	PlayingPlayerId uint
 }
 
 func NewGameLogic(mode string, players []Player) GameLogic {
@@ -18,6 +20,10 @@ func NewGameLogic(mode string, players []Player) GameLogic {
 		Deck:    deck.NewDeck(cards),
 		Players: players,
 	}
+}
+
+func (g *GameLogic) getStartingPlayerId() uint {
+	return g.Players[rand.Intn(len(g.Players))].ID
 }
 
 func (g *GameLogic) PreparePhase() error {
@@ -29,6 +35,7 @@ func (g *GameLogic) PreparePhase() error {
 		}
 		g.Players[i].hand.cards = append(g.Players[i].hand.cards, card)
 	}
+	g.PlayingPlayerId = g.getStartingPlayerId()
 	return nil
 }
 
@@ -41,12 +48,8 @@ func (g *GameLogic) isPlayerIdValid(playerId uint) bool {
 	return false
 }
 
-func (g *GameLogic) GetGameState(playerId uint) (GameState, error) {
+func (g *GameLogic) GetGameState() (GameState, error) {
 	var ret GameState
-
-	if !g.isPlayerIdValid(playerId) {
-		return ret, fmt.Errorf("Player id : %d, is invalid", playerId)
-	}
 
 	ret.DeckCardsCount = uint(g.Deck.Count())
 	for _, p := range g.Players {
@@ -55,7 +58,7 @@ func (g *GameLogic) GetGameState(playerId uint) (GameState, error) {
 		}
 	}
 
-	ret.PlayingPlayerId = playerId
+	ret.PlayingPlayerId = g.PlayingPlayerId
 
 	return ret, nil
 }
