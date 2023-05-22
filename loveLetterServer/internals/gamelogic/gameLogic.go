@@ -9,9 +9,9 @@ import (
 )
 
 type GameLogic struct {
-	Players         []Player
-	Deck            deck.Deck
-	PlayingPlayerId uint
+	Players            []Player
+	Deck               deck.Deck
+	PlayingPlayerIndex uint
 }
 
 func NewGameLogic(mode string, players []Player) GameLogic {
@@ -22,8 +22,8 @@ func NewGameLogic(mode string, players []Player) GameLogic {
 	}
 }
 
-func (g *GameLogic) getStartingPlayerId() uint {
-	return g.Players[rand.Intn(len(g.Players))].ID
+func (g *GameLogic) getStartingPlayerIndex() uint {
+	return uint(rand.Intn(len(g.Players)))
 }
 
 func (g *GameLogic) PreparePhase() error {
@@ -35,7 +35,7 @@ func (g *GameLogic) PreparePhase() error {
 		}
 		g.Players[i].hand.cards = append(g.Players[i].hand.cards, card)
 	}
-	g.PlayingPlayerId = g.getStartingPlayerId()
+	g.PlayingPlayerIndex = g.getStartingPlayerIndex()
 	return nil
 }
 
@@ -58,7 +58,7 @@ func (g *GameLogic) GetGameState() (GameState, error) {
 		}
 	}
 
-	ret.PlayingPlayerId = g.PlayingPlayerId
+	ret.PlayingPlayerId = g.Players[g.PlayingPlayerIndex].ID
 
 	return ret, nil
 }
