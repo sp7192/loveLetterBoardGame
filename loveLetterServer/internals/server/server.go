@@ -126,18 +126,14 @@ func (s *Server) SendTo(id uint, msg string) {
 	s.messageChannel <- models.ServerMessage{ToClientId: id, Message: msg}
 }
 
-func (s *Server) SendToAll(g *gamelogic.GameLogic) error {
+func (s *Server) SendToAll(state gamelogic.GameState) error {
+	data, err := json.Marshal(state)
+	if err != nil {
+		return err
+	}
+
 	ids := s.GetClientsIds()
 	for _, id := range ids {
-		state, err := g.GetGameState()
-		if err != nil {
-			return err
-		}
-
-		data, err := json.Marshal(state)
-		if err != nil {
-			return err
-		}
 		s.SendTo(id, string(data))
 	}
 	return nil

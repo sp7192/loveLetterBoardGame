@@ -16,8 +16,15 @@ func NewGameLoop(s *server.Server, g *gamelogic.GameLogic, c *configs.Configs) G
 	return GameLoop{server: s, gameLogic: g, configs: c}
 }
 
-func (g *GameLoop) BeginGame() {
+func (g *GameLoop) BeginGame() error {
 	g.gameLogic.PreparePhase()
-	g.server.SendToAll(g.gameLogic)
+
+	state, err := g.gameLogic.GetGameState()
+	if err != nil {
+		return err
+	}
+	g.server.SendToAll(state)
+
 	g.gameLogic.BeginTurns()
+	return nil
 }
