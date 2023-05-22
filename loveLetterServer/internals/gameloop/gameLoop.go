@@ -25,6 +25,29 @@ func (g *GameLoop) BeginGame() error {
 	}
 	g.server.SendToAll(state)
 
-	g.gameLogic.BeginTurns()
+	err = g.runTurns()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *GameLoop) isGameEnded() bool {
+	// TODO: To be implemeneted
+	return false
+}
+
+func (g *GameLoop) runTurns() error {
+	for {
+		// Send turn player card.
+		// send game state to others.
+		// receive player action. (Random action if Timeout).
+		// send game state to others.
+		// check for game end condition.
+		if g.isGameEnded() {
+			break
+		}
+		// change to next playing player.
+	}
 	return nil
 }

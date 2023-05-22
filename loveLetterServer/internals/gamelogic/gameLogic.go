@@ -5,7 +5,6 @@ import (
 	"loveLetterBoardGame/internals/gamelogic/card"
 	"loveLetterBoardGame/internals/gamelogic/deck"
 	"math/rand"
-	"time"
 )
 
 type GameLogic struct {
@@ -61,13 +60,6 @@ func (g *GameLogic) GetGameState() (GameState, error) {
 	ret.PlayingPlayerId = g.Players[g.PlayingPlayerIndex].ID
 
 	return ret, nil
-}
-
-func (g *GameLogic) BeginTurns() {
-	for {
-		fmt.Println("SIMULATE TURNS.. TODO REMOVE.")
-		time.Sleep(time.Second)
-	}
 }
 
 func (g *GameLogic) DrawPhase() {
