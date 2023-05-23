@@ -62,6 +62,21 @@ func (g *GameLogic) GetGameState() (GameState, error) {
 	return ret, nil
 }
 
-func (g *GameLogic) DrawPhase() {
+func (g *GameLogic) GetPlayersCardsInHand(id uint) []card.Card {
+	for _, p := range g.Players {
+		if id == p.ID {
+			return p.hand.cards
+		}
+	}
+	return nil
+}
 
+func (g *GameLogic) DrawPhase() bool {
+	card, ok := g.Deck.Draw()
+	if !ok {
+		return false
+	}
+	index := g.PlayingPlayerIndex
+	g.Players[index].hand.cards = append(g.Players[index].hand.cards, card)
+	return true
 }

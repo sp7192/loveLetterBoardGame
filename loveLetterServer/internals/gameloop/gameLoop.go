@@ -1,9 +1,11 @@
 package gameloop
 
 import (
+	"encoding/json"
 	"loveLetterBoardGame/internals/configs"
 	gamelogic "loveLetterBoardGame/internals/gamelogic"
 	"loveLetterBoardGame/internals/server"
+	"time"
 )
 
 type GameLoop struct {
@@ -23,13 +25,49 @@ func (g *GameLoop) BeginGame() error {
 	if err != nil {
 		return err
 	}
-	g.server.SendToAll(state)
+	err = g.server.SendToAll(state)
+	if err != nil {
+		return nil
+	}
+
+	err = g.sendPlayerCardsInHandToAll()
+	if err != nil {
+		return err
+	}
 
 	err = g.runTurns()
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (g *GameLoop) sendPlayerCardsInHand(id uint) error {
+	cards := g.gameLogic.GetPlayersCardsInHand(id)
+	data, err := json.Marshal(cards)
+	if err != nil {
+		return err
+	}
+	g.server.SendTo(id, string(data))
+	return nil
+}
+
+func (g *GameLoop) sendPlayerCardsInHandToAll() error {
+	for _, p := range g.gameLogic.Players {
+		err := g.sendPlayerCardsInHand(p.ID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (g *GameLoop) sendGameStateToAll() error {
+	state, err := g.gameLogic.GetGameState()
+	if err != nil {
+		return err
+	}
+	return g.server.SendToAll(state)
 }
 
 func (g *GameLoop) isGameEnded() bool {
@@ -39,15 +77,37 @@ func (g *GameLoop) isGameEnded() bool {
 
 func (g *GameLoop) runTurns() error {
 	for {
-		// Send turn player card.
-		// send game state to others.
-		// receive player action. (Random action if Timeout).
-		// send game state to others.
-		// check for game end condition.
+		// 1. Draw phase
+		ok := g.gameLogic.DrawPhase()
+		if !ok {
+			break
+		}
+
+		// 2. Send turn player card.
+		err := g.sendPlayerCardsInHand(g.gameLogic.PlayingPlayerIndex)
+		if err != nil {
+			return err
+		}
+
+		// 3. Send game state to others.
+		err = g.sendGameStateToAll()
+		if err != nil {
+			return err
+		}
+
+		// 4. Receive player action. (Random action if Timeout).
+
+		// 5. Send game state to others.
+
+		// 6. Check for game end condition.
 		if g.isGameEnded() {
 			break
 		}
-		// change to next playing player.
+
+		// 7.Change to next playing player.
+
+		time.Sleep(5 * time.Second)
 	}
+	// 8. Find winner.
 	return nil
 }

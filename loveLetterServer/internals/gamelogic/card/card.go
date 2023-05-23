@@ -1,8 +1,8 @@
 package card
 
 type Card struct {
-	Number uint
-	Effect ICardEffect
+	Number uint        `json:"card_number"`
+	Effect ICardEffect `json:"-"`
 }
 
 func NewCardsSet(mode string) []Card {
