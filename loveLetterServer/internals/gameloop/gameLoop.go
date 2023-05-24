@@ -84,7 +84,7 @@ func (g *GameLoop) runTurns() error {
 		}
 
 		// 2. Send turn player card.
-		err := g.sendPlayerCardsInHand(g.gameLogic.PlayingPlayerIndex)
+		err := g.sendPlayerCardsInHand(g.gameLogic.Players[g.gameLogic.PlayingPlayerIndex].ID)
 		if err != nil {
 			return err
 		}
@@ -106,6 +106,7 @@ func (g *GameLoop) runTurns() error {
 
 		// 7.Change to next playing player.
 
+		// TODO Remove
 		time.Sleep(5 * time.Second)
 	}
 	// 8. Find winner.

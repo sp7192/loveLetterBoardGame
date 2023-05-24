@@ -11,6 +11,7 @@ type GameLogic struct {
 	Players            []Player
 	Deck               deck.Deck
 	PlayingPlayerIndex uint
+	PlayingPlayerId    uint
 }
 
 func NewGameLogic(mode string, players []Player) GameLogic {
