@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"loveLetterBoardGame/internals/gamelogic/card"
 	"loveLetterBoardGame/internals/gamelogic/deck"
+	"loveLetterBoardGame/models"
 	"math/rand"
 )
 
@@ -80,4 +81,8 @@ func (g *GameLogic) DrawPhase() bool {
 	index := g.PlayingPlayerIndex
 	g.Players[index].hand.cards = append(g.Players[index].hand.cards, card)
 	return true
+}
+
+func (g *GameLogic) UpdateGame(msg <-chan models.ClientMessage) {
+	// TODO : To be implemented
 }

@@ -12,20 +12,21 @@ import (
 )
 
 type Server struct {
-	ip             string
-	port           int
-	listener       net.Listener
-	connections    SafeConnections
-	config         configs.Configs
-	messageChannel chan models.ServerMessage
+	ip                 string
+	port               int
+	listener           net.Listener
+	connections        SafeConnections
+	config             configs.Configs
+	sendMessageChannel chan models.ServerMessage
+	receivedMessages   chan models.ClientMessage
 }
 
 func NewServer(conf configs.Configs) Server {
 	return Server{ip: conf.ServerIP,
-		port:           int(conf.ServerPort),
-		connections:    NewSafeConnections(),
-		config:         conf,
-		messageChannel: make(chan models.ServerMessage),
+		port:               int(conf.ServerPort),
+		connections:        NewSafeConnections(),
+		config:             conf,
+		sendMessageChannel: make(chan models.ServerMessage),
 	}
 }
 
@@ -45,6 +46,30 @@ func (s *Server) listen() (func() error, error) {
 	}, nil
 }
 
+func (s *Server) handleClientMessage(id uint) {
+	go func() {
+		buffer := make([]byte, 4096)
+		for {
+			conn, err := s.connections.Get(id)
+			if err != nil {
+				fmt.Println("Error connections ", err.Error())
+				return
+			}
+			l, err := conn.Read(buffer)
+			if err != nil {
+				fmt.Println("Error reading:", err.Error())
+				return
+			}
+
+			if err != nil {
+				fmt.Println("Error reading:", err.Error())
+				return
+			}
+			s.receivedMessages <- models.ClientMessage{ClientId: id, Message: string(buffer[:l])}
+		}
+	}()
+}
+
 func (s *Server) acceptClients() error {
 	for {
 		if s.connections.Count() >= s.config.PlayersInRoomCount {
@@ -56,6 +81,7 @@ func (s *Server) acceptClients() error {
 		}
 		id := s.connections.Count() + 1
 		s.connections.Set(id, conn)
+		s.handleClientMessage(id)
 		s.SendTo(id, fmt.Sprintf("Your id set by server is : %d", id))
 	}
 	return nil
@@ -64,7 +90,7 @@ func (s *Server) acceptClients() error {
 func (s *Server) sendMessagesToClients() {
 	go func() {
 		for {
-			msg := <-s.messageChannel
+			msg := <-s.sendMessageChannel
 			conn, err := s.connections.Get(msg.ToClientId)
 			if err != nil {
 				fmt.Printf("Errror in reading connection :%s\n", err.Error())
@@ -115,7 +141,7 @@ func (s *Server) shutdown() error {
 
 func (s *Server) SendToWithTimeout(id uint, msg string, timeout time.Duration) error {
 	select {
-	case s.messageChannel <- models.ServerMessage{ToClientId: id, Message: msg}:
+	case s.sendMessageChannel <- models.ServerMessage{ToClientId: id, Message: msg}:
 		return nil
 	case <-time.After(timeout):
 		return fmt.Errorf("Send time out")
@@ -123,7 +149,7 @@ func (s *Server) SendToWithTimeout(id uint, msg string, timeout time.Duration) e
 }
 
 func (s *Server) SendTo(id uint, msg string) {
-	s.messageChannel <- models.ServerMessage{ToClientId: id, Message: msg}
+	s.sendMessageChannel <- models.ServerMessage{ToClientId: id, Message: msg}
 }
 
 func (s *Server) SendToAll(state gamelogic.GameState) error {
@@ -137,4 +163,8 @@ func (s *Server) SendToAll(state gamelogic.GameState) error {
 		s.SendTo(id, string(data))
 	}
 	return nil
+}
+
+func (s *Server) GetClientMessage() (<-chan models.ClientMessage, error) {
+	return s.receivedMessages, nil
 }

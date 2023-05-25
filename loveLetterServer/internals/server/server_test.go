@@ -123,8 +123,8 @@ func TestStart(t *testing.T) {
 
 func TestSendMessagesToClients(t *testing.T) {
 	server := &Server{
-		messageChannel: make(chan models.ServerMessage),
-		connections:    NewSafeConnections(),
+		sendMessageChannel: make(chan models.ServerMessage),
+		connections:        NewSafeConnections(),
 	}
 
 	clientConn, serverConn := net.Pipe()
@@ -145,7 +145,7 @@ func TestSendMessagesToClients(t *testing.T) {
 	// Add the write operation to the channel.
 	ch <- func() {
 		msg := models.ServerMessage{toClientId: clientID, message: "Hello, client!"}
-		server.messageChannel <- msg
+		server.sendMessageChannel <- msg
 	}
 
 	// Run the functions on separate goroutines.

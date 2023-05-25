@@ -96,19 +96,27 @@ func (g *GameLoop) runTurns() error {
 		}
 
 		// 4. Receive player action. (Random action if Timeout).
+		msg, err := g.server.GetClientMessage()
+		if err != nil {
+			// handle timeout
+			return err
+		}
 
-		// 5. Send game state to others.
+		// 5. Update the game based on player action
+		g.gameLogic.UpdateGame(msg)
 
-		// 6. Check for game end condition.
+		// 6. Send game state to others.
+
+		// 7. Check for game end condition.
 		if g.isGameEnded() {
 			break
 		}
 
-		// 7.Change to next playing player.
+		// 8.Change to next playing player.
 
 		// TODO Remove
 		time.Sleep(5 * time.Second)
 	}
-	// 8. Find winner.
+	// 9. Find winner.
 	return nil
 }
