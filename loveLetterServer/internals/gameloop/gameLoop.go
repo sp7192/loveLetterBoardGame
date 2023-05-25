@@ -98,7 +98,6 @@ func (g *GameLoop) runTurns() error {
 		// 4. Receive player action. (Random action if Timeout).
 		msg, err := g.server.GetClientMessage()
 		if err != nil {
-			// handle timeout
 			return err
 		}
 

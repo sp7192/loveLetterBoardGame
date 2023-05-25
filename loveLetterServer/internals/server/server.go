@@ -165,6 +165,11 @@ func (s *Server) SendToAll(state gamelogic.GameState) error {
 	return nil
 }
 
-func (s *Server) GetClientMessage() (<-chan models.ClientMessage, error) {
-	return s.receivedMessages, nil
+func (s *Server) GetClientMessage() (models.ClientMessage, error) {
+	select {
+	case ret := <-s.receivedMessages:
+		return ret, nil
+	case <-time.After(3 * time.Second): // TODO : Change magic number to read from config
+		return models.ClientMessage{}, fmt.Errorf("time out")
+	}
 }

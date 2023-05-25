@@ -83,6 +83,6 @@ func (g *GameLogic) DrawPhase() bool {
 	return true
 }
 
-func (g *GameLogic) UpdateGame(msg <-chan models.ClientMessage) {
+func (g *GameLogic) UpdateGame(msg models.ClientMessage) {
 	// TODO : To be implemented
 }
