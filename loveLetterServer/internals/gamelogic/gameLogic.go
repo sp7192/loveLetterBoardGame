@@ -1,6 +1,7 @@
 package gamelogic
 
 import (
+	"encoding/json"
 	"fmt"
 	"loveLetterBoardGame/internals/gamelogic/card"
 	"loveLetterBoardGame/internals/gamelogic/deck"
@@ -83,6 +84,15 @@ func (g *GameLogic) DrawPhase() bool {
 	return true
 }
 
-func (g *GameLogic) UpdateGame(msg models.ClientMessage) {
-	// TODO : To be implemented
+func (g *GameLogic) UpdateGame(msg models.ClientMessage) error {
+	var action models.ClientAction
+	err := json.Unmarshal([]byte(msg.Message), &action)
+	if err != nil {
+		return err
+	}
+	// To remove the played card from the players hand
+
+	// To call the effect of the played cards
+
+	return nil
 }

@@ -144,7 +144,7 @@ func TestSendMessagesToClients(t *testing.T) {
 
 	// Add the write operation to the channel.
 	ch <- func() {
-		msg := models.ServerMessage{toClientId: clientID, message: "Hello, client!"}
+		msg := models.ServerMessage{ToClientId: clientID, Message: "Hello, client!"}
 		server.sendMessageChannel <- msg
 	}
 

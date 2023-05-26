@@ -34,8 +34,8 @@ func TestGameLogic_PreparePhase(t *testing.T) {
 
 	// Check that each player has one card in their hand
 	for _, p := range g.Players {
-		if len(p.Hand.cards) != 1 {
-			t.Errorf("expected player %d to have 1 card, got %d", p.ID, len(p.Hand.cards))
+		if len(p.hand.cards) != 1 {
+			t.Errorf("expected player %d to have 1 card, got %d", p.ID, len(p.hand.cards))
 		}
 	}
 }

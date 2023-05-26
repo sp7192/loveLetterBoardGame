@@ -1,5 +1,7 @@
 package gamelogic
 
+import "fmt"
+
 type Player struct {
 	ID            uint
 	totalScore    uint
@@ -31,4 +33,14 @@ func CreatePlayersFromIDs(ids []uint) []Player {
 	}
 
 	return players
+}
+
+func (p *Player) RemoveFromHand(cardId uint) error {
+	for i, card := range p.hand.cards {
+		if card.Number == cardId {
+			p.hand.cards = append(p.hand.cards[:i], p.hand.cards[i+1:]...)
+			return nil
+		}
+	}
+	return fmt.Errorf("card id : %d not in player with id : %d hands", cardId, p.ID)
 }
