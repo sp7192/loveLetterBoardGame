@@ -1,6 +1,9 @@
 package gamelogic
 
-import "fmt"
+import (
+	"fmt"
+	"loveLetterBoardGame/internals/gamelogic/card"
+)
 
 type Player struct {
 	ID            uint
@@ -35,12 +38,12 @@ func CreatePlayersFromIDs(ids []uint) []Player {
 	return players
 }
 
-func (p *Player) RemoveFromHand(cardId uint) error {
+func (p *Player) RemoveFromHand(cardId uint) (card.Card, error) {
 	for i, card := range p.hand.cards {
 		if card.Number == cardId {
 			p.hand.cards = append(p.hand.cards[:i], p.hand.cards[i+1:]...)
-			return nil
+			return card, nil
 		}
 	}
-	return fmt.Errorf("card id : %d not in player with id : %d hands", cardId, p.ID)
+	return card.Card{}, fmt.Errorf("card id : %d not in player with id : %d hands", cardId, p.ID)
 }

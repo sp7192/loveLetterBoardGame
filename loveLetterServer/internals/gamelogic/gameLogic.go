@@ -24,6 +24,15 @@ func NewGameLogic(mode string, players []Player) GameLogic {
 	}
 }
 
+func (g *GameLogic) getPlayerById(playerId uint) (*Player, error) {
+	for _, player := range g.Players {
+		if player.ID == playerId {
+			return &player, nil
+		}
+	}
+	return nil, fmt.Errorf("Player with %d id not found", playerId)
+}
+
 func (g *GameLogic) getStartingPlayerIndex() uint {
 	return uint(rand.Intn(len(g.Players)))
 }
@@ -90,9 +99,21 @@ func (g *GameLogic) UpdateGame(msg models.ClientMessage) error {
 	if err != nil {
 		return err
 	}
-	// To remove the played card from the players hand
 
-	// To call the effect of the played cards
+	playingPlayer, err := g.getPlayerById(msg.ClientId)
+	if err != nil {
+		return err
+	}
+
+	playedCard, err := playingPlayer.RemoveFromHand(action.PlayedCardId)
+	if err != nil {
+		return err
+	}
+
+	// TODO : At the moment cards have no effect
+	if playedCard.Effect != nil {
+		playedCard.Effect.Play()
+	}
 
 	return nil
 }
