@@ -105,6 +105,10 @@ func (g *GameLoop) runTurns() error {
 		g.gameLogic.UpdateGame(msg)
 
 		// 6. Send game state to others.
+		err = g.sendGameStateToAll()
+		if err != nil {
+			return err
+		}
 
 		// 7. Check for game end condition.
 		if g.isGameEnded() {

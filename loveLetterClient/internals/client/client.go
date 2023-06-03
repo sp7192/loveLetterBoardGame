@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"loveLetterClient/internals/configs"
+	"loveLetterClient/internals/logic"
 	"net"
 	"sync"
 	"time"
@@ -11,6 +12,7 @@ import (
 type Client struct {
 	config *configs.Configs
 	conn   net.Conn
+	logic  logic.GameLogic
 }
 
 func NewClient(c *configs.Configs) Client {
