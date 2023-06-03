@@ -10,9 +10,9 @@ import (
 )
 
 type Client struct {
-	config *configs.Configs
-	conn   net.Conn
-	logic  logic.GameLogic
+	config    *configs.Configs
+	conn      net.Conn
+	gameLogic *logic.GameLogic
 }
 
 func NewClient(c *configs.Configs) Client {
@@ -92,7 +92,7 @@ func (c *Client) Run() {
 			break
 		case msg := <-msgCh:
 			fmt.Printf("Server >> %s\n", msg)
+			c.gameLogic.ParseMessage(msg)
 		}
 	}
-	wg.Wait()
 }

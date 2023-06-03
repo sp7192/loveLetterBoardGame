@@ -7,3 +7,7 @@ type GameLogic struct {
 	playersIdInGame []uint
 	playedCards     []models.Card
 }
+
+func (g *GameLogic) ParseMessage(msg string) error {
+	return nil
+}
