@@ -91,7 +91,6 @@ func (c *Client) Run() {
 		case <-done:
 			break
 		case msg := <-msgCh:
-			fmt.Printf("Server >> %s\n", msg)
 			c.gameLogic.ParseMessage(msg)
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"loveLetterBoardGame/internals/configs"
 	gamelogic "loveLetterBoardGame/internals/gamelogic"
 	"loveLetterBoardGame/internals/server"
+	"loveLetterBoardGame/models"
 	"time"
 )
 
@@ -48,7 +49,7 @@ func (g *GameLoop) sendPlayerCardsInHand(id uint) error {
 	if err != nil {
 		return err
 	}
-	g.server.SendTo(id, string(data))
+	g.server.SendTo(id, models.DrawMessage, string(data))
 	return nil
 }
 

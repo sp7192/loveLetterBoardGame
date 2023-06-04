@@ -30,12 +30,16 @@ func (g *GameLogic) update(msg models.Message) error {
 	switch msg.Type {
 	case models.DrawMessage:
 		// TODO : to be completed
+		fmt.Printf("Draw message, Data : %s\n", msg.Payload)
 	case models.InfoMessage:
 		// TODO : to be completed
+		fmt.Printf("Info message, Data : %s\n", msg.Payload)
 	case models.UpdateMessage:
 		// TODO : to be completed
+		fmt.Printf("Update message, Data : %s\n", msg.Payload)
 	case models.PlayedMessage:
 		// TODO : to be completed
+		fmt.Printf("Played message, Data : %s\n", msg.Payload)
 	default:
 		return fmt.Errorf("Message type %s, not supported", msg.Type)
 	}

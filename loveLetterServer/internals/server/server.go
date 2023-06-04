@@ -82,7 +82,7 @@ func (s *Server) acceptClients() error {
 		id := s.connections.Count() + 1
 		s.connections.Set(id, conn)
 		s.handleClientMessage(id)
-		s.SendTo(id, fmt.Sprintf("Your id set by server is : %d", id))
+		s.SendTo(id, models.InfoMessage, fmt.Sprintf("Your id set by server is : %d", id))
 	}
 	return nil
 }
@@ -148,8 +148,17 @@ func (s *Server) SendToWithTimeout(id uint, msg string, timeout time.Duration) e
 	}
 }
 
-func (s *Server) SendTo(id uint, msg string) {
-	s.sendMessageChannel <- models.ServerMessage{ToClientId: id, Message: msg}
+func (s *Server) SendTo(id uint, msgType string, msgPayload string) error {
+	data := models.Message{
+		Type:    msgType,
+		Payload: msgPayload,
+	}
+	msg, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	s.sendMessageChannel <- models.ServerMessage{ToClientId: id, Message: string(msg)}
+	return nil
 }
 
 func (s *Server) SendToAll(state gamelogic.GameState) error {
@@ -160,7 +169,7 @@ func (s *Server) SendToAll(state gamelogic.GameState) error {
 
 	ids := s.GetClientsIds()
 	for _, id := range ids {
-		s.SendTo(id, string(data))
+		s.SendTo(id, models.UpdateMessage, string(data))
 	}
 	return nil
 }
