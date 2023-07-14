@@ -1,13 +1,16 @@
 package models
 
+type MessageType string
+
 const (
-	InfoMessage   = "info"
-	UpdateMessage = "update"
-	DrawMessage   = "draw"
-	PlayedMessage = "played"
+	InfoMessage     MessageType = "info"
+	UpdateMessage               = "update"
+	InitDrawMessage             = "initDraw"
+	TurnDrawMessage             = "turnDraw"
+	PlayedMessage               = "played"
 )
 
 type Message struct {
-	Type    string `json:"type"`
-	Payload string `json:"payload"`
+	Type    MessageType `json:"type"`
+	Payload string      `json:"payload"`
 }

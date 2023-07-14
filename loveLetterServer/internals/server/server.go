@@ -27,6 +27,7 @@ func NewServer(conf configs.Configs) Server {
 		connections:        NewSafeConnections(),
 		config:             conf,
 		sendMessageChannel: make(chan models.ServerMessage),
+		receivedMessages:   make(chan models.ClientMessage),
 	}
 }
 
@@ -49,12 +50,12 @@ func (s *Server) listen() (func() error, error) {
 func (s *Server) handleClientMessage(id uint) {
 	go func() {
 		buffer := make([]byte, 4096)
+		conn, err := s.connections.Get(id)
+		if err != nil {
+			fmt.Println("Error connections ", err.Error())
+			return
+		}
 		for {
-			conn, err := s.connections.Get(id)
-			if err != nil {
-				fmt.Println("Error connections ", err.Error())
-				return
-			}
 			l, err := conn.Read(buffer)
 			if err != nil {
 				fmt.Println("Error reading:", err.Error())
@@ -148,7 +149,7 @@ func (s *Server) SendToWithTimeout(id uint, msg string, timeout time.Duration) e
 	}
 }
 
-func (s *Server) SendTo(id uint, msgType string, msgPayload string) error {
+func (s *Server) SendTo(id uint, msgType models.MessageType, msgPayload string) error {
 	data := models.Message{
 		Type:    msgType,
 		Payload: msgPayload,
@@ -178,7 +179,7 @@ func (s *Server) GetClientMessage() (models.ClientMessage, error) {
 	select {
 	case ret := <-s.receivedMessages:
 		return ret, nil
-	case <-time.After(3 * time.Second): // TODO : Change magic number to read from config
+	case <-time.After(120 * time.Second): // TODO : Change magic number to read from config
 		return models.ClientMessage{}, fmt.Errorf("time out")
 	}
 }

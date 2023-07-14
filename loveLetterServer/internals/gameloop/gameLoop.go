@@ -43,19 +43,19 @@ func (g *GameLoop) BeginGame() error {
 	return nil
 }
 
-func (g *GameLoop) sendPlayerCardsInHand(id uint) error {
+func (g *GameLoop) sendPlayerCardsInHand(id uint, msgType models.MessageType) error {
 	cards := g.gameLogic.GetPlayersCardsInHand(id)
 	data, err := json.Marshal(cards)
 	if err != nil {
 		return err
 	}
-	g.server.SendTo(id, models.DrawMessage, string(data))
+	g.server.SendTo(id, msgType, string(data))
 	return nil
 }
 
 func (g *GameLoop) sendPlayerCardsInHandToAll() error {
 	for _, p := range g.gameLogic.Players {
-		err := g.sendPlayerCardsInHand(p.ID)
+		err := g.sendPlayerCardsInHand(p.ID, models.InitDrawMessage)
 		if err != nil {
 			return err
 		}
@@ -85,7 +85,7 @@ func (g *GameLoop) runTurns() error {
 		}
 
 		// 2. Send turn player card.
-		err := g.sendPlayerCardsInHand(g.gameLogic.Players[g.gameLogic.PlayingPlayerIndex].ID)
+		err := g.sendPlayerCardsInHand(g.gameLogic.Players[g.gameLogic.PlayingPlayerIndex].ID, models.TurnDrawMessage)
 		if err != nil {
 			return err
 		}

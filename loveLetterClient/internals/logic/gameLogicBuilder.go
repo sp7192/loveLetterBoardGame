@@ -15,7 +15,7 @@ func (b *GameLogicBuilder) PlayerIds(ids []uint) *GameLogicBuilder {
 
 func (b *GameLogicBuilder) OwnHand(hand models.Hand) *GameLogicBuilder {
 	b.actions = append(b.actions, func(g *GameLogic) {
-		g.ownHand = hand
+		g.OwnHand = hand
 	})
 	return b
 }

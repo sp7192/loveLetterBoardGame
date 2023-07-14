@@ -16,7 +16,10 @@ type Client struct {
 }
 
 func NewClient(c *configs.Configs) Client {
-	return Client{config: c}
+	return Client{
+		config:    c,
+		gameLogic: logic.NewGameLogic(),
+	}
 }
 
 func (c *Client) connectToServer() bool {
@@ -71,6 +74,23 @@ func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) <-chan
 	return ret
 }
 
+func (c *Client) sendToServerLoop(done <-chan struct{}) {
+	go func() {
+		for {
+			select {
+			case msg := <-c.gameLogic.SendMessageQueue:
+				n, err := c.conn.Write([]byte(msg))
+				fmt.Printf("Write %d bytes to server\n", n)
+				if err != nil {
+					// TODO: handle retry
+					return
+				}
+			case <-done:
+			}
+		}
+	}()
+}
+
 func (c *Client) Run() {
 	fmt.Println("Client Started")
 	if !c.tryConnection() {
@@ -79,10 +99,13 @@ func (c *Client) Run() {
 	}
 	defer c.conn.Close()
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
 	done := make(chan struct{})
 	defer close(done)
+	c.sendToServerLoop(done)
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
 	msgCh := c.receiveMessage(done, &wg)
 	fmt.Printf("")
 

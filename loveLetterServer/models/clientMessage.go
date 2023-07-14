@@ -6,5 +6,5 @@ type ClientMessage struct {
 }
 
 type ClientAction struct {
-	PlayedCardId uint `json:"played_card_id"`
+	PlayedCardNumber uint `json:"played_card_number"`
 }

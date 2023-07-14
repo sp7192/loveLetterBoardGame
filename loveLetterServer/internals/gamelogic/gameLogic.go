@@ -105,7 +105,7 @@ func (g *GameLogic) UpdateGame(msg models.ClientMessage) error {
 		return err
 	}
 
-	playedCard, err := playingPlayer.RemoveFromHand(action.PlayedCardId)
+	playedCard, err := playingPlayer.RemoveFromHand(action.PlayedCardNumber)
 	if err != nil {
 		return err
 	}
