@@ -12,7 +12,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
+	
 	fmt.Printf("Client id is : %d\n", conf.ClientID)
 	cl := client.NewClient(&conf)
 	cl.Run()

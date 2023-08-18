@@ -42,8 +42,7 @@ func (g *GameLogic) ParseMessage(strMsg string) error {
 func (g *GameLogic) PlayTurn() error {
 	// TODO : to get from player
 	action := models.ClientAction{
-		// PlayedCardNumber: g.OwnHand.Cards[0].Number,
-		PlayedCardNumber: 1,
+		PlayedCardNumber: g.OwnHand.Cards[0].Number,
 	}
 	str, err := json.Marshal(action)
 	if err != nil {
@@ -56,8 +55,12 @@ func (g *GameLogic) PlayTurn() error {
 func (g *GameLogic) update(msg models.Message) error {
 	switch msg.Type {
 	case models.InitDrawMessage:
-		// TODO : to be completed
 		fmt.Printf(">> Init Draw message, Data : %s\n\n", msg.Payload)
+		err := json.Unmarshal([]byte(msg.Payload), &g.OwnHand.Cards)
+		if err != nil {
+			return fmt.Errorf("error in initDraw message : %s\n", err.Error())
+		}
+		return nil
 	case models.TurnDrawMessage:
 		// TODO : to be completed
 		fmt.Printf(">> Turn Draw message, Data : %s\n\n", msg.Payload)
