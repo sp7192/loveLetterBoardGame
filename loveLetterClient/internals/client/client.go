@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"log"
 	"loveLetterClient/internals/configs"
 	"loveLetterClient/internals/logic"
 	"net"
@@ -13,12 +14,14 @@ type Client struct {
 	config    *configs.Configs
 	conn      net.Conn
 	gameLogic *logic.GameLogic
+	logger    *log.Logger
 }
 
-func NewClient(c *configs.Configs) Client {
+func NewClient(c *configs.Configs, l *log.Logger) Client {
 	return Client{
 		config:    c,
-		gameLogic: logic.NewGameLogic(),
+		gameLogic: logic.NewGameLogic(l),
+		logger:    l,
 	}
 }
 
@@ -27,7 +30,7 @@ func (c *Client) connectToServer() bool {
 	c.conn, err = net.Dial("tcp", fmt.Sprintf("%s:%d", c.config.ServerIP, c.config.ServerPort))
 	if err != nil {
 		// TODO : reconnect
-		fmt.Printf("Error is : %s\n", err.Error())
+		c.logger.Printf("Error is : %s\n", err.Error())
 		return false
 	}
 	return true
@@ -38,7 +41,7 @@ func (c *Client) tryConnection() bool {
 	isConnected := c.connectToServer()
 	for !isConnected && time.Now().Before(t.Add(3*time.Second)) { // to be handled in config
 		time.Sleep(100 * time.Millisecond)
-		fmt.Printf("Retrying to connect to server\n")
+		c.logger.Printf("Retrying to connect to server\n")
 		isConnected = c.connectToServer()
 	}
 	return isConnected
@@ -80,7 +83,7 @@ func (c *Client) sendToServerLoop(done <-chan struct{}) {
 			select {
 			case msg := <-c.gameLogic.SendMessageQueue:
 				n, err := c.conn.Write([]byte(msg))
-				fmt.Printf("Write %d bytes to server\n", n)
+				c.logger.Printf("Write %d bytes to server\n", n)
 				if err != nil {
 					// TODO: handle retry
 					return
@@ -94,7 +97,7 @@ func (c *Client) sendToServerLoop(done <-chan struct{}) {
 func (c *Client) Run() {
 	fmt.Println("Client Started")
 	if !c.tryConnection() {
-		fmt.Printf("COULD NOT CONNECT TO SERVER\n")
+		c.logger.Printf("COULD NOT CONNECT TO SERVER\n")
 		return
 	}
 	defer c.conn.Close()
@@ -107,7 +110,7 @@ func (c *Client) Run() {
 	wg.Add(1)
 
 	msgCh := c.receiveMessage(done, &wg)
-	fmt.Printf("")
+	c.logger.Printf("")
 
 	for {
 		select {

@@ -2,6 +2,7 @@ package gameloop
 
 import (
 	"encoding/json"
+	"log"
 	"loveLetterBoardGame/internals/configs"
 	gamelogic "loveLetterBoardGame/internals/gamelogic"
 	"loveLetterBoardGame/internals/server"
@@ -13,10 +14,11 @@ type GameLoop struct {
 	server    *server.Server
 	gameLogic *gamelogic.GameLogic
 	configs   *configs.Configs
+	logger    *log.Logger
 }
 
-func NewGameLoop(s *server.Server, g *gamelogic.GameLogic, c *configs.Configs) GameLoop {
-	return GameLoop{server: s, gameLogic: g, configs: c}
+func NewGameLoop(s *server.Server, g *gamelogic.GameLogic, c *configs.Configs, l *log.Logger) GameLoop {
+	return GameLoop{server: s, gameLogic: g, configs: c, logger: l}
 }
 
 func (g *GameLoop) BeginGame() error {
@@ -78,45 +80,45 @@ func (g *GameLoop) isGameEnded() bool {
 
 func (g *GameLoop) runTurns() error {
 	for {
-		// 1. Draw phase
+		g.logger.Println("1. Draw phase")
 		ok := g.gameLogic.DrawPhase()
 		if !ok {
 			break
 		}
 
-		// 2. Send turn player card.
+		g.logger.Println("2. Send turn player card")
 		err := g.sendPlayerCardsInHand(g.gameLogic.Players[g.gameLogic.PlayingPlayerIndex].ID, models.TurnDrawMessage)
 		if err != nil {
 			return err
 		}
 
-		// 3. Send game state to others.
+		g.logger.Println("3. Send game state to others")
 		err = g.sendGameStateToAll()
 		if err != nil {
 			return err
 		}
 
-		// 4. Receive player action. (Random action if Timeout).
+		g.logger.Println("4. Receive player action. (Random action if Timeout).")
 		msg, err := g.server.GetClientMessage()
 		if err != nil {
 			return err
 		}
 
-		// 5. Update the game based on player action
+		g.logger.Println("5. Update the game based on player action")
 		g.gameLogic.UpdateGame(msg)
 
-		// 6. Send game state to others.
+		g.logger.Println("6. Send game state to others.")
 		err = g.sendGameStateToAll()
 		if err != nil {
 			return err
 		}
 
-		// 7. Check for game end condition.
+		g.logger.Println("7. Check for game end condition.")
 		if g.isGameEnded() {
 			break
 		}
 
-		// 8.Change to next playing player.
+		g.logger.Println("8. Change to next playing player.")
 
 		// TODO Remove
 		time.Sleep(5 * time.Second)

@@ -3,6 +3,7 @@ package logic
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"loveLetterClient/internals/models"
 )
 
@@ -12,9 +13,10 @@ type GameLogic struct {
 	playedCards      []models.Card
 	playingPlayerId  uint
 	SendMessageQueue chan string
+	logger           *log.Logger
 }
 
-func NewGameLogic() *GameLogic {
+func NewGameLogic(l *log.Logger) *GameLogic {
 	return &GameLogic{
 		OwnHand: models.Hand{
 			Cards: make([]models.Card, 0, 2),
@@ -23,6 +25,7 @@ func NewGameLogic() *GameLogic {
 		playedCards:      make([]models.Card, 0, 32),
 		playingPlayerId:  0,
 		SendMessageQueue: make(chan string),
+		logger:           l,
 	}
 }
 
@@ -55,7 +58,7 @@ func (g *GameLogic) PlayTurn() error {
 func (g *GameLogic) update(msg models.Message) error {
 	switch msg.Type {
 	case models.InitDrawMessage:
-		fmt.Printf(">> Init Draw message, Data : %s\n\n", msg.Payload)
+		g.logger.Printf(">> Init Draw message, Data : %s\n\n", msg.Payload)
 		err := json.Unmarshal([]byte(msg.Payload), &g.OwnHand.Cards)
 		if err != nil {
 			return fmt.Errorf("error in initDraw message : %s\n", err.Error())
@@ -63,17 +66,17 @@ func (g *GameLogic) update(msg models.Message) error {
 		return nil
 	case models.TurnDrawMessage:
 		// TODO : to be completed
-		fmt.Printf(">> Turn Draw message, Data : %s\n\n", msg.Payload)
+		g.logger.Printf(">> Turn Draw message, Data : %s\n\n", msg.Payload)
 		return g.PlayTurn()
 	case models.InfoMessage:
 		// TODO : to be completed
-		fmt.Printf(">> Info message, Data : %s\n\n", msg.Payload)
+		g.logger.Printf(">> Info message, Data : %s\n\n", msg.Payload)
 	case models.UpdateMessage:
 		// TODO : to be completed
-		fmt.Printf(">> Update message, Data : %s\n\n", msg.Payload)
+		g.logger.Printf(">> Update message, Data : %s\n\n", msg.Payload)
 	case models.PlayedMessage:
 		// TODO : to be completed
-		fmt.Printf(">> Played message, Data : %s\n\n", msg.Payload)
+		g.logger.Printf(">> Played message, Data : %s\n\n", msg.Payload)
 	default:
 		return fmt.Errorf("Message type %s, not supported", msg.Type)
 	}
