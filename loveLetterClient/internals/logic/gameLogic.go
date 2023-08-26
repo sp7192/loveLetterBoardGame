@@ -67,6 +67,10 @@ func (g *GameLogic) update(msg models.Message) error {
 	case models.TurnDrawMessage:
 		// TODO : to be completed
 		g.logger.Printf(">> Turn Draw message, Data : %s\n\n", msg.Payload)
+		err := json.Unmarshal([]byte(msg.Payload), &g.OwnHand.Cards)
+		if err != nil {
+			return fmt.Errorf("error in initDraw message : %s\n", err.Error())
+		}
 		return g.PlayTurn()
 	case models.InfoMessage:
 		// TODO : to be completed

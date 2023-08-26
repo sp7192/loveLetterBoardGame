@@ -64,7 +64,7 @@ func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) <-chan
 			l, err := c.conn.Read(buffer)
 			if err != nil {
 				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-					fmt.Println("Read timeout")
+					c.logger.Println("Read timeout")
 					continue
 				}
 				fmt.Println("Error reading:", err.Error())
@@ -83,7 +83,7 @@ func (c *Client) sendToServerLoop(done <-chan struct{}) {
 			select {
 			case msg := <-c.gameLogic.SendMessageQueue:
 				n, err := c.conn.Write([]byte(msg))
-				c.logger.Printf("Write %d bytes to server\n", n)
+				c.logger.Printf("Wrote %s to server\n", msg[:n])
 				if err != nil {
 					// TODO: handle retry
 					return

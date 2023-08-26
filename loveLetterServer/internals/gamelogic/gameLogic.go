@@ -24,13 +24,13 @@ func NewGameLogic(mode string, players []Player) GameLogic {
 	}
 }
 
-func (g *GameLogic) getPlayerById(playerId uint) (*Player, error) {
-	for _, player := range g.Players {
+func (g *GameLogic) getPlayerIndex(playerId uint) (int, error) {
+	for i, player := range g.Players {
 		if player.ID == playerId {
-			return &player, nil
+			return i, nil
 		}
 	}
-	return nil, fmt.Errorf("Player with %d id not found", playerId)
+	return -1, fmt.Errorf("Player with %d id not found", playerId)
 }
 
 func (g *GameLogic) getStartingPlayerIndex() uint {
@@ -100,12 +100,12 @@ func (g *GameLogic) UpdateGame(msg models.ClientMessage) error {
 		return err
 	}
 
-	playingPlayer, err := g.getPlayerById(msg.ClientId)
+	index, err := g.getPlayerIndex(msg.ClientId)
 	if err != nil {
 		return err
 	}
 
-	playedCard, err := playingPlayer.RemoveFromHand(action.PlayedCardNumber)
+	playedCard, err := g.Players[index].RemoveFromHand(action.PlayedCardNumber)
 	if err != nil {
 		return err
 	}
