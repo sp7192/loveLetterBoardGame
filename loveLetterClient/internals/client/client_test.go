@@ -18,7 +18,7 @@ func TestNewClient(t *testing.T) {
 		ServerPort: 1234,
 	}
 
-	client := NewClient(testConfig)
+	client := NewClient(testConfig, nil)
 
 	assert.Equal(t, client.config, testConfig, "NewClient() failed: config field does not match")
 	assert.Nil(t, client.conn, "NewClient() failed: conn field should be nil")
@@ -90,7 +90,7 @@ func TestClient_receiveMessage(t *testing.T) {
 	c := NewClient(&configs.Configs{
 		ServerIP:   "127.0.0.1",
 		ServerPort: 2334,
-	})
+	}, nil)
 
 	fmt.Println("Client Started")
 	if !c.tryConnection() {
