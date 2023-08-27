@@ -12,6 +12,7 @@ import (
 type GameLogic struct {
 	Players            []Player
 	Deck               deck.Deck
+	lastPlayedCard     card.Card
 	PlayingPlayerIndex uint
 	PlayingPlayerId    uint
 }
@@ -70,7 +71,7 @@ func (g *GameLogic) GetGameState() (GameState, error) {
 	}
 
 	ret.PlayingPlayerId = g.Players[g.PlayingPlayerIndex].ID
-
+	ret.PlayedCard = &g.lastPlayedCard
 	return ret, nil
 }
 
@@ -114,6 +115,8 @@ func (g *GameLogic) UpdateGame(msg models.ClientMessage) error {
 	if playedCard.Effect != nil {
 		playedCard.Effect.Play()
 	}
+
+	g.lastPlayedCard = card.Card{Number: action.PlayedCardNumber}
 
 	return nil
 }

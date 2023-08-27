@@ -101,6 +101,7 @@ func (s *Server) sendMessagesToClients() {
 				fmt.Printf("Error in sending message: %s\n", err.Error())
 				continue
 			}
+			fmt.Printf("Sent : %s\n", msg.Message)
 		}
 	}()
 }
@@ -178,6 +179,7 @@ func (s *Server) SendToAll(state gamelogic.GameState) error {
 func (s *Server) GetClientMessage() (models.ClientMessage, error) {
 	select {
 	case ret := <-s.receivedMessages:
+		fmt.Printf("Received : %v\n", ret)
 		return ret, nil
 	case <-time.After(120 * time.Second): // TODO : Change magic number to read from config
 		return models.ClientMessage{}, fmt.Errorf("time out")
