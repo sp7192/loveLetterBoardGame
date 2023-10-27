@@ -101,7 +101,6 @@ func (s *Server) sendMessagesToClients() {
 				fmt.Printf("Error in sending message: %s\n", err.Error())
 				continue
 			}
-			fmt.Printf("Sent : %s\n", msg.Message)
 		}
 	}()
 }
@@ -151,11 +150,12 @@ func (s *Server) SendToWithTimeout(id uint, msg string, timeout time.Duration) e
 }
 
 func (s *Server) SendTo(id uint, msgType models.MessageType, msgPayload string) error {
+	fmt.Printf("In SendTo: Type : %s, Payload: %s\n", msgType, msgPayload)
 	data := models.Message{
 		Type:    msgType,
 		Payload: msgPayload,
 	}
-	msg, err := json.Marshal(data)
+	msg, err := json.MarshalIndent(data, "", "	")
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (s *Server) SendTo(id uint, msgType models.MessageType, msgPayload string) 
 }
 
 func (s *Server) SendToAll(state gamelogic.GameState) error {
-	data, err := json.Marshal(state)
+	data, err := json.MarshalIndent(state, "", "	")
 	if err != nil {
 		return err
 	}

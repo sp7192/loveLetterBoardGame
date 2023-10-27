@@ -47,7 +47,7 @@ func (g *GameLogic) PlayTurn() error {
 	action := models.ClientAction{
 		PlayedCardNumber: g.OwnHand.Cards[0].Number,
 	}
-	str, err := json.Marshal(action)
+	str, err := json.MarshalIndent(action, "", "	")
 	if err != nil {
 		return err
 	}

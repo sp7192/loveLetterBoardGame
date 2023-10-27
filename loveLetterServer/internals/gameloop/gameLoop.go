@@ -47,7 +47,7 @@ func (g *GameLoop) BeginGame() error {
 
 func (g *GameLoop) sendPlayerCardsInHand(id uint, msgType models.MessageType) error {
 	cards := g.gameLogic.GetPlayersCardsInHand(id)
-	data, err := json.Marshal(cards)
+	data, err := json.MarshalIndent(cards, "", "	")
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (g *GameLoop) runTurns() error {
 			break
 		}
 
-		g.logger.Println("8. Change to next playing player.")
+		g.logger.Print("8. Change to next playing player.\n\n")
 
 		// TODO Remove
 		time.Sleep(5 * time.Second)
