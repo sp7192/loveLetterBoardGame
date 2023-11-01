@@ -1,11 +1,15 @@
 package client
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"loveLetterClient/internals/configs"
 	"loveLetterClient/internals/logic"
+	"loveLetterClient/internals/models"
 	"net"
+	"os"
 	"sync"
 	"time"
 )
@@ -20,7 +24,7 @@ type Client struct {
 func NewClient(c *configs.Configs, l *log.Logger) Client {
 	return Client{
 		config:    c,
-		gameLogic: logic.NewGameLogic(l),
+		gameLogic: logic.NewGameLogic(l, bufio.NewScanner(os.Stdin)),
 		logger:    l,
 	}
 }
@@ -70,7 +74,7 @@ func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) <-chan
 				fmt.Println("Error reading:", err.Error())
 				return
 			}
-
+			fmt.Printf("BUUUUUUUUFER : %s\n", string(buffer[:l]))
 			ret <- string(buffer[:l])
 		}
 	}()
@@ -110,14 +114,23 @@ func (c *Client) Run() {
 	wg.Add(1)
 
 	msgCh := c.receiveMessage(done, &wg)
+
 	c.logger.Printf("")
 
 	for {
 		select {
 		case <-done:
 			break
-		case msg := <-msgCh:
-			c.gameLogic.ParseMessage(msg)
+		case strMsg := <-msgCh:
+			var msg models.Message
+			err := json.Unmarshal([]byte(strMsg), &msg)
+			if err != nil {
+				// TODO: Send Not ok Message
+				c.logger.Printf("ERROR PARSING MESSAGE %s: error is %s\n", strMsg, err.Error())
+				continue
+			}
+			c.gameLogic.SendReceiveAck(msg)
+			c.gameLogic.Update(msg)
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,9 +15,10 @@ type GameLogic struct {
 	playingPlayerId  uint
 	SendMessageQueue chan string
 	logger           *log.Logger
+	inputScanner     *bufio.Scanner
 }
 
-func NewGameLogic(l *log.Logger) *GameLogic {
+func NewGameLogic(l *log.Logger, sc *bufio.Scanner) *GameLogic {
 	return &GameLogic{
 		OwnHand: models.Hand{
 			Cards: make([]models.Card, 0, 2),
@@ -26,16 +28,45 @@ func NewGameLogic(l *log.Logger) *GameLogic {
 		playingPlayerId:  0,
 		SendMessageQueue: make(chan string),
 		logger:           l,
+		inputScanner:     sc,
 	}
 }
 
-func (g *GameLogic) ParseMessage(strMsg string) error {
-	var msg models.Message
-	err := json.Unmarshal([]byte(strMsg), &msg)
+func (g *GameLogic) getUserInput() uint {
+	g.logger.Printf("Choose your card:\nEnter 0 for Card:%v\nEnter 1 for Card:%v\n\n", g.OwnHand.Cards[0], g.OwnHand.Cards[1])
+
+	for g.inputScanner.Scan() {
+		text := g.inputScanner.Text()
+		if text == "0" {
+			return 0
+		} else if text == "1" {
+			return 1
+		} else {
+			g.logger.Printf("Wrong Input!\n")
+			g.logger.Printf("Choose your card:\nEnter 0 for Card:%v\nEnter 1 for Card:%v\n\n", g.OwnHand.Cards[0], g.OwnHand.Cards[1])
+		}
+	}
+	return 0
+}
+
+func (g *GameLogic) SendReceiveAck(msg models.Message) error {
+
+	sendMessage := models.Message{
+		Payload: msg.Type,
+		Type:    models.AckMessage,
+	}
+
+	str, err := json.MarshalIndent(sendMessage, "", "	")
 	if err != nil {
 		return err
 	}
-	err = g.update(msg)
+	// TODO: Add timeout
+	g.SendMessageQueue <- string(str)
+	return nil
+}
+
+func (g *GameLogic) Update(msg models.Message) error {
+	err := g.update(msg)
 	if err != nil {
 		return err
 	}
@@ -43,14 +74,18 @@ func (g *GameLogic) ParseMessage(strMsg string) error {
 }
 
 func (g *GameLogic) PlayTurn() error {
-	// TODO : to get from player
+	// TODO : to add timeout.
+	// TODO : to add target player.
+	// TODO : to add some action(like guessing the card).
+	index := g.getUserInput()
 	action := models.ClientAction{
-		PlayedCardNumber: g.OwnHand.Cards[0].Number,
+		PlayedCardNumber: g.OwnHand.Cards[index].Number,
 	}
 	str, err := json.MarshalIndent(action, "", "	")
 	if err != nil {
 		return err
 	}
+	// TODO: Add timeout
 	g.SendMessageQueue <- string(str)
 	return nil
 }

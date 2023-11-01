@@ -28,7 +28,7 @@ func (g *GameLoop) BeginGame() error {
 	if err != nil {
 		return err
 	}
-	err = g.server.SendToAll(state)
+	err = g.server.SendToAllWithAck(state)
 	if err != nil {
 		return nil
 	}
@@ -51,7 +51,7 @@ func (g *GameLoop) sendPlayerCardsInHand(id uint, msgType models.MessageType) er
 	if err != nil {
 		return err
 	}
-	g.server.SendTo(id, msgType, string(data))
+	g.server.SendAndReceiveAck(id, msgType, string(data))
 	return nil
 }
 
@@ -70,7 +70,7 @@ func (g *GameLoop) sendGameStateToAll() error {
 	if err != nil {
 		return err
 	}
-	return g.server.SendToAll(state)
+	return g.server.SendToAllWithAck(state)
 }
 
 func (g *GameLoop) isGameEnded() bool {
@@ -79,8 +79,10 @@ func (g *GameLoop) isGameEnded() bool {
 }
 
 func (g *GameLoop) runTurns() error {
+	turn := 0
 	for {
-		g.logger.Println("1. Draw phase")
+		turn++
+		g.logger.Println("\n==============================\n1. Draw phase, turn = ", turn)
 		ok := g.gameLogic.DrawPhase()
 		if !ok {
 			break
@@ -103,6 +105,7 @@ func (g *GameLoop) runTurns() error {
 		if err != nil {
 			return err
 		}
+		g.logger.Printf("Client Message: %v\n", msg)
 
 		g.logger.Println("5. Update the game based on player action")
 		g.gameLogic.UpdateGame(msg)

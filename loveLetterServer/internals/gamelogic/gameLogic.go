@@ -3,6 +3,7 @@ package gamelogic
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"loveLetterBoardGame/internals/gamelogic/card"
 	"loveLetterBoardGame/internals/gamelogic/deck"
 	"loveLetterBoardGame/models"
@@ -15,13 +16,15 @@ type GameLogic struct {
 	lastPlayedCard     card.Card
 	PlayingPlayerIndex uint
 	PlayingPlayerId    uint
+	logger             *log.Logger
 }
 
-func NewGameLogic(mode string, players []Player) GameLogic {
+func NewGameLogic(mode string, players []Player, l *log.Logger) GameLogic {
 	cards := card.NewCardsSet("TEST")
 	return GameLogic{
 		Deck:    deck.NewDeck(cards),
 		Players: players,
+		logger:  l,
 	}
 }
 
