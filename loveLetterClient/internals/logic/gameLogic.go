@@ -9,13 +9,13 @@ import (
 )
 
 type GameLogic struct {
-	OwnHand          models.Hand
-	playersIdInGame  []uint
-	playedCards      []models.Card
-	playingPlayerId  uint
-	SendMessageQueue chan string
-	logger           *log.Logger
-	inputScanner     *bufio.Scanner
+	OwnHand         models.Hand
+	playersIdInGame []uint
+	playedCards     []models.Card
+	playingPlayerId uint
+	SendMessage     func([]byte) (int, error)
+	logger          *log.Logger
+	inputScanner    *bufio.Scanner
 }
 
 func NewGameLogic(l *log.Logger, sc *bufio.Scanner) *GameLogic {
@@ -23,12 +23,11 @@ func NewGameLogic(l *log.Logger, sc *bufio.Scanner) *GameLogic {
 		OwnHand: models.Hand{
 			Cards: make([]models.Card, 0, 2),
 		},
-		playersIdInGame:  make([]uint, 0, 10),
-		playedCards:      make([]models.Card, 0, 32),
-		playingPlayerId:  0,
-		SendMessageQueue: make(chan string),
-		logger:           l,
-		inputScanner:     sc,
+		playersIdInGame: make([]uint, 0, 10),
+		playedCards:     make([]models.Card, 0, 32),
+		playingPlayerId: 0,
+		logger:          l,
+		inputScanner:    sc,
 	}
 }
 
@@ -49,8 +48,7 @@ func (g *GameLogic) getUserInput() uint {
 	return 0
 }
 
-func (g *GameLogic) SendReceiveAck(msg models.Message) error {
-
+func (g *GameLogic) SendReceivedAck(msg models.Message) error {
 	sendMessage := models.Message{
 		Payload: msg.Type,
 		Type:    models.AckMessage,
@@ -61,16 +59,18 @@ func (g *GameLogic) SendReceiveAck(msg models.Message) error {
 		return err
 	}
 	// TODO: Add timeout
-	g.SendMessageQueue <- string(str)
-	return nil
-}
-
-func (g *GameLogic) Update(msg models.Message) error {
-	err := g.update(msg)
+	_, err = g.SendMessage(str)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (g *GameLogic) DoSendAck(msg models.Message) bool {
+	if msg.Type == models.TurnDrawMessage {
+		return false
+	}
+	return true
 }
 
 func (g *GameLogic) PlayTurn() error {
@@ -85,12 +85,14 @@ func (g *GameLogic) PlayTurn() error {
 	if err != nil {
 		return err
 	}
-	// TODO: Add timeout
-	g.SendMessageQueue <- string(str)
+	_, err = g.SendMessage(str)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (g *GameLogic) update(msg models.Message) error {
+func (g *GameLogic) Update(msg models.Message) error {
 	switch msg.Type {
 	case models.InitDrawMessage:
 		g.logger.Printf(">> Init Draw message, Data : %s\n\n", msg.Payload)

@@ -32,6 +32,7 @@ func NewClient(c *configs.Configs, l *log.Logger) Client {
 func (c *Client) connectToServer() bool {
 	var err error
 	c.conn, err = net.Dial("tcp", fmt.Sprintf("%s:%d", c.config.ServerIP, c.config.ServerPort))
+	c.gameLogic.SendMessage = c.conn.Write
 	if err != nil {
 		// TODO : reconnect
 		c.logger.Printf("Error is : %s\n", err.Error())
@@ -81,23 +82,6 @@ func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) <-chan
 	return ret
 }
 
-func (c *Client) sendToServerLoop(done <-chan struct{}) {
-	go func() {
-		for {
-			select {
-			case msg := <-c.gameLogic.SendMessageQueue:
-				n, err := c.conn.Write([]byte(msg))
-				c.logger.Printf("Wrote %s to server\n", msg[:n])
-				if err != nil {
-					// TODO: handle retry
-					return
-				}
-			case <-done:
-			}
-		}
-	}()
-}
-
 func (c *Client) Run() {
 	fmt.Println("Client Started")
 	if !c.tryConnection() {
@@ -108,7 +92,6 @@ func (c *Client) Run() {
 
 	done := make(chan struct{})
 	defer close(done)
-	c.sendToServerLoop(done)
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -129,7 +112,9 @@ func (c *Client) Run() {
 				c.logger.Printf("ERROR PARSING MESSAGE %s: error is %s\n", strMsg, err.Error())
 				continue
 			}
-			c.gameLogic.SendReceiveAck(msg)
+			if c.gameLogic.DoSendAck(msg) {
+				c.gameLogic.SendReceivedAck(msg)
+			}
 			c.gameLogic.Update(msg)
 		}
 	}

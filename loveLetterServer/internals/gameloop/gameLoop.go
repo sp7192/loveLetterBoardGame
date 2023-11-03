@@ -45,19 +45,27 @@ func (g *GameLoop) BeginGame() error {
 	return nil
 }
 
-func (g *GameLoop) sendPlayerCardsInHand(id uint, msgType models.MessageType) error {
+func (g *GameLoop) sendPlayerCardsInHand(id uint, msgType models.MessageType, hasAck bool) error {
 	cards := g.gameLogic.GetPlayersCardsInHand(id)
 	data, err := json.MarshalIndent(cards, "", "	")
 	if err != nil {
 		return err
 	}
-	g.server.SendAndReceiveAck(id, msgType, string(data))
+	// TODO: Refactor
+	if !hasAck {
+		err = g.server.SendTo(id, msgType, string(data))
+	} else {
+		err = g.server.SendAndReceiveAck(id, msgType, string(data))
+	}
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (g *GameLoop) sendPlayerCardsInHandToAll() error {
 	for _, p := range g.gameLogic.Players {
-		err := g.sendPlayerCardsInHand(p.ID, models.InitDrawMessage)
+		err := g.sendPlayerCardsInHand(p.ID, models.InitDrawMessage, true)
 		if err != nil {
 			return err
 		}
@@ -88,14 +96,14 @@ func (g *GameLoop) runTurns() error {
 			break
 		}
 
-		g.logger.Println("2. Send turn player card")
-		err := g.sendPlayerCardsInHand(g.gameLogic.Players[g.gameLogic.PlayingPlayerIndex].ID, models.TurnDrawMessage)
+		g.logger.Println("2. Send game state to others")
+		err := g.sendGameStateToAll()
 		if err != nil {
 			return err
 		}
 
-		g.logger.Println("3. Send game state to others")
-		err = g.sendGameStateToAll()
+		g.logger.Println("3. Send turn player card")
+		err = g.sendPlayerCardsInHand(g.gameLogic.Players[g.gameLogic.PlayingPlayerIndex].ID, models.TurnDrawMessage, false)
 		if err != nil {
 			return err
 		}
