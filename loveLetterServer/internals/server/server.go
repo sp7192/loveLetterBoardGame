@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"loveLetterBoardGame/internals/configs"
 	"loveLetterBoardGame/internals/gamelogic"
 	"loveLetterBoardGame/models"
@@ -12,29 +13,29 @@ import (
 )
 
 type Server struct {
-	ip                 string
-	port               int
-	listener           net.Listener
-	connections        SafeConnections
-	config             configs.Configs
-	sendMessageChannel chan models.ServerMessage
-	receivedMessages   chan models.ClientMessage
+	ip               string
+	port             int
+	listener         net.Listener
+	connections      SafeConnections
+	config           configs.Configs
+	receivedMessages chan models.ClientMessage
+	logger           *log.Logger
 }
 
-func NewServer(conf configs.Configs) Server {
+func NewServer(conf configs.Configs, l *log.Logger) Server {
 	return Server{ip: conf.ServerIP,
-		port:               int(conf.ServerPort),
-		connections:        NewSafeConnections(),
-		config:             conf,
-		sendMessageChannel: make(chan models.ServerMessage),
-		receivedMessages:   make(chan models.ClientMessage),
+		port:             int(conf.ServerPort),
+		connections:      NewSafeConnections(),
+		config:           conf,
+		receivedMessages: make(chan models.ClientMessage),
+		logger:           l,
 	}
 }
 
 func (s *Server) listen() (func() error, error) {
 	var err error
 	addr := fmt.Sprintf("%s:%d", s.ip, s.port)
-	fmt.Printf("listening on %s\n", addr)
+	s.logger.Printf("listening on %s\n", addr)
 	s.listener, err = net.Listen("tcp", addr)
 	if err != nil {
 		return func() error { return nil }, fmt.Errorf("error listening: %w", err)
@@ -52,18 +53,18 @@ func (s *Server) handleClientMessage(id uint) {
 		buffer := make([]byte, 4096)
 		conn, err := s.connections.Get(id)
 		if err != nil {
-			fmt.Println("Error connections ", err.Error())
+			s.logger.Println("Error connections ", err.Error())
 			return
 		}
 		for {
 			l, err := conn.Read(buffer)
 			if err != nil {
-				fmt.Println("Error reading:", err.Error())
+				s.logger.Println("Error reading:", err.Error())
 				return
 			}
 
 			if err != nil {
-				fmt.Println("Error reading:", err.Error())
+				s.logger.Println("Error reading:", err.Error())
 				return
 			}
 			s.receivedMessages <- models.ClientMessage{ClientId: id, Message: string(buffer[:l])}
@@ -83,26 +84,22 @@ func (s *Server) acceptClients() error {
 		id := s.connections.Count() + 1
 		s.connections.Set(id, conn)
 		s.handleClientMessage(id)
-		s.SendTo(id, models.InfoMessage, fmt.Sprintf("Your id set by server is : %d", id))
+		s.SendAndReceiveAck(id, models.InfoMessage, fmt.Sprintf("Your id set by server is : %d", id))
 	}
 	return nil
 }
 
-func (s *Server) sendMessagesToClients() {
-	go func() {
-		for {
-			msg := <-s.sendMessageChannel
-			conn, err := s.connections.Get(msg.ToClientId)
-			if err != nil {
-				fmt.Printf("Errror in reading connection :%s\n", err.Error())
-				continue
-			}
-			if err := writeToConnection(conn, []byte(msg.Message)); err != nil {
-				fmt.Printf("Error in sending message: %s\n", err.Error())
-				continue
-			}
-		}
-	}()
+func (s *Server) SendToClient(msg models.ServerMessage) error {
+	conn, err := s.connections.Get(msg.ToClientId)
+	if err != nil {
+		s.logger.Printf("Errror in reading connection :%s\n", err.Error())
+		return err
+	}
+	if err := writeToConnection(conn, []byte(msg.Message)); err != nil {
+		s.logger.Printf("Error in sending message: %s\n", err.Error())
+		return err
+	}
+	return nil
 }
 
 func (s *Server) Start() error {
@@ -112,7 +109,6 @@ func (s *Server) Start() error {
 	}
 	defer closer()
 
-	s.sendMessagesToClients()
 	err = s.acceptClients()
 	if err != nil {
 		return err
@@ -140,17 +136,8 @@ func (s *Server) shutdown() error {
 	return nil
 }
 
-func (s *Server) SendToWithTimeout(id uint, msg string, timeout time.Duration) error {
-	select {
-	case s.sendMessageChannel <- models.ServerMessage{ToClientId: id, Message: msg}:
-		return nil
-	case <-time.After(timeout):
-		return fmt.Errorf("Send time out")
-	}
-}
-
 func (s *Server) SendTo(id uint, msgType models.MessageType, msgPayload string) error {
-	fmt.Printf("In SendTo: Type : %s, Payload: %s\n", msgType, msgPayload)
+	s.logger.Printf("In SendTo, id=%d: Type : %s, Payload: %s\n", id, msgType, msgPayload)
 	data := models.Message{
 		Type:    msgType,
 		Payload: msgPayload,
@@ -159,11 +146,41 @@ func (s *Server) SendTo(id uint, msgType models.MessageType, msgPayload string) 
 	if err != nil {
 		return err
 	}
-	s.sendMessageChannel <- models.ServerMessage{ToClientId: id, Message: string(msg)}
+	err = s.SendToClient(models.ServerMessage{ToClientId: id, Message: string(msg)})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (s *Server) SendToAll(state gamelogic.GameState) error {
+func (s *Server) SendAndReceiveAck(id uint, msgType models.MessageType, msgPayload string) error {
+	err := s.SendTo(id, msgType, msgPayload)
+	if err != nil {
+		return err
+	}
+	clientMessage, err := s.GetClientMessage()
+	if err != nil {
+		return err
+	}
+	var msg models.Message
+	err = json.Unmarshal([]byte(clientMessage.Message), &msg)
+	if err != nil {
+		return err
+	}
+
+	if clientMessage.ClientId != id {
+		return fmt.Errorf("ack client id is different, expected : %d, got : %d\n", id, clientMessage.ClientId)
+	}
+
+	if msg.Type != models.AckMessage || msg.Payload != string(msgType) {
+		return fmt.Errorf("expected : %s, got : %s\n", models.AckMessage, msg.Type)
+	}
+
+	s.logger.Printf("Received ack of %s\n", msg.Payload)
+	return nil
+}
+
+func (s *Server) SendToAllWithAck(state gamelogic.GameState) error {
 	data, err := json.MarshalIndent(state, "", "	")
 	if err != nil {
 		return err
@@ -171,7 +188,7 @@ func (s *Server) SendToAll(state gamelogic.GameState) error {
 
 	ids := s.GetClientsIds()
 	for _, id := range ids {
-		s.SendTo(id, models.UpdateMessage, string(data))
+		s.SendAndReceiveAck(id, models.UpdateMessage, string(data))
 	}
 	return nil
 }
@@ -179,7 +196,6 @@ func (s *Server) SendToAll(state gamelogic.GameState) error {
 func (s *Server) GetClientMessage() (models.ClientMessage, error) {
 	select {
 	case ret := <-s.receivedMessages:
-		fmt.Printf("Received : %v\n", ret)
 		return ret, nil
 	case <-time.After(120 * time.Second): // TODO : Change magic number to read from config
 		return models.ClientMessage{}, fmt.Errorf("time out")

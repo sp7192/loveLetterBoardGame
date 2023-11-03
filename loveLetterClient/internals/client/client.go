@@ -1,11 +1,15 @@
 package client
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"loveLetterClient/internals/configs"
 	"loveLetterClient/internals/logic"
+	"loveLetterClient/internals/models"
 	"net"
+	"os"
 	"sync"
 	"time"
 )
@@ -20,7 +24,7 @@ type Client struct {
 func NewClient(c *configs.Configs, l *log.Logger) Client {
 	return Client{
 		config:    c,
-		gameLogic: logic.NewGameLogic(l),
+		gameLogic: logic.NewGameLogic(l, bufio.NewScanner(os.Stdin)),
 		logger:    l,
 	}
 }
@@ -28,6 +32,7 @@ func NewClient(c *configs.Configs, l *log.Logger) Client {
 func (c *Client) connectToServer() bool {
 	var err error
 	c.conn, err = net.Dial("tcp", fmt.Sprintf("%s:%d", c.config.ServerIP, c.config.ServerPort))
+	c.gameLogic.SendMessage = c.conn.Write
 	if err != nil {
 		// TODO : reconnect
 		c.logger.Printf("Error is : %s\n", err.Error())
@@ -70,28 +75,11 @@ func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) <-chan
 				fmt.Println("Error reading:", err.Error())
 				return
 			}
-
+			fmt.Printf("BUUUUUUUUFER : %s\n", string(buffer[:l]))
 			ret <- string(buffer[:l])
 		}
 	}()
 	return ret
-}
-
-func (c *Client) sendToServerLoop(done <-chan struct{}) {
-	go func() {
-		for {
-			select {
-			case msg := <-c.gameLogic.SendMessageQueue:
-				n, err := c.conn.Write([]byte(msg))
-				c.logger.Printf("Wrote %s to server\n", msg[:n])
-				if err != nil {
-					// TODO: handle retry
-					return
-				}
-			case <-done:
-			}
-		}
-	}()
 }
 
 func (c *Client) Run() {
@@ -104,20 +92,30 @@ func (c *Client) Run() {
 
 	done := make(chan struct{})
 	defer close(done)
-	c.sendToServerLoop(done)
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 
 	msgCh := c.receiveMessage(done, &wg)
+
 	c.logger.Printf("")
 
 	for {
 		select {
 		case <-done:
 			break
-		case msg := <-msgCh:
-			c.gameLogic.ParseMessage(msg)
+		case strMsg := <-msgCh:
+			var msg models.Message
+			err := json.Unmarshal([]byte(strMsg), &msg)
+			if err != nil {
+				// TODO: Send Not ok Message
+				c.logger.Printf("ERROR PARSING MESSAGE %s: error is %s\n", strMsg, err.Error())
+				continue
+			}
+			if c.gameLogic.DoSendAck(msg) {
+				c.gameLogic.SendReceivedAck(msg)
+			}
+			c.gameLogic.Update(msg)
 		}
 	}
 }

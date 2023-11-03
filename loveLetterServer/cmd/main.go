@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// Create a new Server
-	srv := server.NewServer(conf)
+	srv := server.NewServer(conf, logger)
 
 	err = srv.Start()
 	if err != nil {
@@ -28,7 +28,7 @@ func main() {
 	}
 
 	players := gamelogic.CreatePlayersFromIDs(srv.GetClientsIds())
-	logic := gamelogic.NewGameLogic("", players)
+	logic := gamelogic.NewGameLogic("", players, logger)
 
 	loop := gameloop.NewGameLoop(&srv, &logic, &conf, logger)
 	loop.BeginGame()

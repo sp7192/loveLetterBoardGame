@@ -8,6 +8,7 @@ const (
 	InitDrawMessage             = "initDraw"
 	TurnDrawMessage             = "turnDraw"
 	PlayedMessage               = "played"
+	AckMessage                  = "ack"
 )
 
 type Message struct {

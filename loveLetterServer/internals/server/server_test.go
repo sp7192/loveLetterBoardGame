@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"loveLetterBoardGame/internals/configs"
 	"loveLetterBoardGame/models"
 	"net"
@@ -15,14 +16,14 @@ import (
 
 func TestNewServer(t *testing.T) {
 	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8200} // create a mock config object
-	s := NewServer(conf)
+	s := NewServer(conf, log.Default())
 	assert.Equal(t, conf.ServerIP, s.ip)
 	assert.Equal(t, conf.ServerPort, uint(s.port))
 }
 
 func TestServer_listen(t *testing.T) {
 	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 8000} // create a mock config object
-	s := NewServer(conf)
+	s := NewServer(conf, log.Default())
 
 	// Test successful listen
 	closer, err := s.listen()
@@ -51,7 +52,7 @@ func TestServer_listen(t *testing.T) {
 
 func TestServer_listen_error(t *testing.T) {
 	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 9200} // create a mock config object
-	s := NewServer(conf)
+	s := NewServer(conf, log.Default())
 	closer, err := s.listen()
 
 	// Test listen error
@@ -86,7 +87,7 @@ func TestStart(t *testing.T) {
 	conf := configs.Configs{PlayersInRoomCount: 2, ServerIP: "127.0.0.1", ServerPort: 8080} // create a mock config object
 
 	// Create a new Server instance
-	srv := NewServer(conf)
+	srv := NewServer(conf, log.Default())
 
 	// Use a channel to signal when acceptClients has finished accepting connections
 	done := make(chan struct{})
@@ -166,7 +167,7 @@ func TestAcceptClients(t *testing.T) {
 	}
 
 	// Create a new Server instance
-	srv := NewServer(conf)
+	srv := NewServer(conf, log.Default())
 	closer, err := srv.listen()
 	assert.NoError(t, err)
 	defer closer()
@@ -203,7 +204,7 @@ func TestAcceptClients(t *testing.T) {
 
 func TestServer_GetAllConnections(t *testing.T) {
 	conf := configs.Configs{PlayersInRoomCount: 4, ServerIP: "127.0.0.1", ServerPort: 9000} // create a mock config object
-	s := NewServer(conf)
+	s := NewServer(conf, log.Default())
 
 	expected := map[uint]net.Conn{
 		1: &net.TCPConn{},
