@@ -116,7 +116,8 @@ func (g *GameLogic) UpdateGame(msg models.ClientMessage) error {
 
 	// TODO : At the moment cards have no effect
 	if playedCard.Effect != nil {
-		playedCard.Effect.Play()
+		// TODO : Add payload from some effects, like guessing the card
+		playedCard.Effect.Play(msg.ClientId, action.TargetPlayerId, "")
 	}
 
 	g.lastPlayedCard = card.Card{Number: action.PlayedCardNumber}
