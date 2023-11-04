@@ -1,6 +1,6 @@
 package card
 
 type ICardEffect interface {
-	Play()
+	Play(ownerId, targetId uint, data string)
 	Discard()
 }
