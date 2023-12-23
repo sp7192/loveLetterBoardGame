@@ -31,5 +31,8 @@ func main() {
 	logic := gamelogic.NewGameLogic("", players, logger)
 
 	loop := gameloop.NewGameLoop(&srv, &logic, &conf, logger)
-	_ = loop.BeginGame()
+	err = loop.BeginGame()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }

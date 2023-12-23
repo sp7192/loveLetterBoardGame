@@ -66,7 +66,7 @@ func (g *GameLogic) SendReceivedAck(msg models.Message) error {
 	return nil
 }
 
-func (g *GameLogic) DoSendAck(msg models.Message) bool {
+func (g *GameLogic) DoesSendAck(msg models.Message) bool {
 	if msg.Type == models.TurnDrawMessage {
 		return false
 	}

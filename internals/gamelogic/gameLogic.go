@@ -124,3 +124,13 @@ func (g *GameLogic) UpdateGame(msg models.ClientMessage) error {
 
 	return nil
 }
+
+func (g *GameLogic) ChangePlayingPlayer() {
+	for i := 1; i < len(g.Players); i++ {
+		c := (uint(i) + g.PlayingPlayerIndex) % uint(len(g.Players))
+		if g.Players[c].isInThisRound {
+			g.PlayingPlayerIndex = c
+			g.PlayingPlayerId = g.Players[c].ID
+		}
+	}
+}

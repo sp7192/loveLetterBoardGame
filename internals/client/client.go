@@ -116,7 +116,7 @@ func (c *Client) Run() {
 				c.logger.Printf("ERROR PARSING MESSAGE %s: error is %s\n", strMsg, err.Error())
 				continue
 			}
-			if c.gameLogic.DoSendAck(msg) {
+			if c.gameLogic.DoesSendAck(msg) {
 				c.gameLogic.SendReceivedAck(msg)
 			}
 			c.gameLogic.Update(msg)
