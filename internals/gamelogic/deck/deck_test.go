@@ -35,11 +35,11 @@ func TestShuffle(t *testing.T) {
 
 	// Create a deck with known cards
 	cards := []card.Card{
-		{1, nil},
-		{2, nil},
-		{3, nil},
-		{4, nil},
-		{5, nil},
+		{Number: 1},
+		{Number: 2},
+		{Number: 3},
+		{Number: 4},
+		{Number: 5},
 	}
 	oldCards := make([]card.Card, len(cards))
 	copy(oldCards, cards)

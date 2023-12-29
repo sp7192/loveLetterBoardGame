@@ -7,7 +7,6 @@ import (
 	gamelogic "loveLetterBoardGame/internals/gamelogic"
 	"loveLetterBoardGame/internals/server"
 	"loveLetterBoardGame/models"
-	"time"
 )
 
 type GameLoop struct {
