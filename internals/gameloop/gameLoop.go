@@ -131,8 +131,6 @@ func (g *GameLoop) runTurns() error {
 
 		g.logger.Print("8. Change to next playing player.\n\n")
 		g.gameLogic.ChangePlayingPlayer()
-		// TODO Remove
-		time.Sleep(5 * time.Second)
 	}
 	// 9. Find winner.
 	return nil
