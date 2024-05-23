@@ -14,7 +14,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	logger := log.Default()
-	conf, err := configs.LoadConfigs("configs", "configs", "env")
+	conf, err := configs.LoadConfigs("../../configs", "configs", "env")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
