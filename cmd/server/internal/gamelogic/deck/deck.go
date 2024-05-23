@@ -1,7 +1,7 @@
 package deck
 
 import (
-	"loveLetterBoardGame/internals/gamelogic/card"
+	"loveLetterBoardGame/cmd/server/internal/gamelogic/card"
 	"math/rand"
 )
 

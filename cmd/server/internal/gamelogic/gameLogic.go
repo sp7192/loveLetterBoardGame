@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"loveLetterBoardGame/internals/gamelogic/card"
-	"loveLetterBoardGame/internals/gamelogic/deck"
-	"loveLetterBoardGame/models"
+	"loveLetterBoardGame/cmd/server/internal/gamelogic/card"
+	"loveLetterBoardGame/cmd/server/internal/gamelogic/deck"
+	"loveLetterBoardGame/internal/models"
 	"math/rand"
 )
 

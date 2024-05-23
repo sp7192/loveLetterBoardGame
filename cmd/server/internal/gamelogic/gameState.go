@@ -1,6 +1,6 @@
 package gamelogic
 
-import "loveLetterBoardGame/internals/gamelogic/card"
+import "loveLetterBoardGame/cmd/server/internal/gamelogic/card"
 
 type GameState struct {
 	DeckCardsCount  uint       `json:"deck_cards_count"`

@@ -3,10 +3,10 @@ package gameloop
 import (
 	"encoding/json"
 	"log"
-	"loveLetterBoardGame/internals/configs"
-	gamelogic "loveLetterBoardGame/internals/gamelogic"
-	"loveLetterBoardGame/internals/server"
-	"loveLetterBoardGame/models"
+	gamelogic "loveLetterBoardGame/cmd/server/internal/gamelogic"
+	"loveLetterBoardGame/cmd/server/internal/server"
+	"loveLetterBoardGame/internal/configs"
+	"loveLetterBoardGame/internal/models"
 )
 
 type GameLoop struct {

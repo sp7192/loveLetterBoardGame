@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"loveLetterBoardGame/models"
+	"loveLetterBoardGame/internal/models"
 )
 
 type GameLogic struct {

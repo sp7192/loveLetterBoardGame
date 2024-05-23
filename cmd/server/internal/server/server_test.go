@@ -3,7 +3,7 @@ package server
 import (
 	"fmt"
 	"log"
-	"loveLetterBoardGame/internals/configs"
+	"loveLetterBoardGame/internal/configs"
 	"net"
 	"reflect"
 	"testing"

@@ -3,7 +3,7 @@ package deck
 import (
 	"fmt"
 	"io/ioutil"
-	"loveLetterBoardGame/internals/gamelogic/card"
+	"loveLetterBoardGame/cmd/server/internal/gamelogic/card"
 
 	"gopkg.in/yaml.v2"
 )

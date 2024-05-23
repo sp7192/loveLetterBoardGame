@@ -2,10 +2,10 @@ package main
 
 import (
 	"log"
-	"loveLetterBoardGame/internals/configs"
-	"loveLetterBoardGame/internals/gamelogic"
-	"loveLetterBoardGame/internals/gameloop"
-	"loveLetterBoardGame/internals/server"
+	"loveLetterBoardGame/cmd/server/internal/gamelogic"
+	"loveLetterBoardGame/cmd/server/internal/gameloop"
+	"loveLetterBoardGame/cmd/server/internal/server"
+	"loveLetterBoardGame/internal/configs"
 	"math/rand"
 	"time"
 )

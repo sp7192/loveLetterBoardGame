@@ -2,7 +2,7 @@ package client
 
 import (
 	"fmt"
-	"loveLetterBoardGame/internals/configs"
+	"loveLetterBoardGame/internal/configs"
 	"net"
 	"sync"
 	"testing"

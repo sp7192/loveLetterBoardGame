@@ -1,8 +1,8 @@
 package gamelogic
 
 import (
-	"loveLetterBoardGame/internals/gamelogic/card"
-	"loveLetterBoardGame/internals/gamelogic/deck"
+	"loveLetterBoardGame/cmd/server/internal/gamelogic/card"
+	"loveLetterBoardGame/cmd/server/internal/gamelogic/deck"
 	"testing"
 )
 

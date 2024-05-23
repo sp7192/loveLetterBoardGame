@@ -2,7 +2,7 @@ package gamelogic
 
 import (
 	"fmt"
-	"loveLetterBoardGame/internals/gamelogic/card"
+	"loveLetterBoardGame/cmd/server/internal/gamelogic/card"
 )
 
 type Player struct {
