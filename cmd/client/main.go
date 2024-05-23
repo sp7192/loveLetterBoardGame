@@ -2,14 +2,14 @@ package main
 
 import (
 	"log"
-	"loveLetterBoardGame/internals/client"
-	"loveLetterBoardGame/internals/configs"
+	"loveLetterBoardGame/cmd/client/internal/client"
+	"loveLetterBoardGame/internal/configs"
 )
 
 func main() {
 	logger := log.Default()
 
-	conf, err := configs.LoadConfigs("configs", "configs", "env")
+	conf, err := configs.LoadConfigs("../../configs", "configs", "env")
 	if err != nil {
 		log.Fatal(err.Error())
 	}

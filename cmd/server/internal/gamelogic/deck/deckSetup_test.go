@@ -1,7 +1,7 @@
 package deck
 
 import (
-	"loveLetterBoardGame/internals/gamelogic/card"
+	"loveLetterBoardGame/cmd/server/internal/gamelogic/card"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

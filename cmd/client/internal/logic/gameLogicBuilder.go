@@ -1,6 +1,6 @@
 package logic
 
-import "loveLetterBoardGame/models"
+import "loveLetterBoardGame/internal/models"
 
 type GameLogicBuilder struct {
 	actions []func(*GameLogic)
