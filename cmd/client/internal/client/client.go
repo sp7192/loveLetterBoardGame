@@ -76,10 +76,9 @@ func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) <-chan
 					c.logger.Println("Read timeout")
 					continue
 				}
-				fmt.Println("Error reading:", err.Error())
+				c.logger.Println("Error reading:", err.Error())
 				return
 			}
-			fmt.Printf("BUUUUUUUUFER : %s\n", string(buffer[:l]))
 			ret <- string(buffer[:l])
 		}
 	}()
@@ -87,7 +86,7 @@ func (c *Client) receiveMessage(done <-chan struct{}, wg *sync.WaitGroup) <-chan
 }
 
 func (c *Client) Run() {
-	fmt.Println("Client Started")
+	c.logger.Println("Client Started")
 	if !c.tryConnection() {
 		c.logger.Printf("COULD NOT CONNECT TO SERVER\n")
 		return

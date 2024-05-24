@@ -4,10 +4,11 @@ import (
 	"log"
 	"loveLetterBoardGame/cmd/client/internal/client"
 	"loveLetterBoardGame/internal/configs"
+	"os"
 )
 
 func main() {
-	logger := log.Default()
+	logger := log.New(os.Stdout, "C>> ", log.Lshortfile|log.LstdFlags)
 
 	conf, err := configs.LoadConfigs("../../configs", "configs", "env")
 	if err != nil {

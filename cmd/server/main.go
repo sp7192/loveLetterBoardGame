@@ -7,13 +7,14 @@ import (
 	"loveLetterBoardGame/cmd/server/internal/server"
 	"loveLetterBoardGame/internal/configs"
 	"math/rand"
+	"os"
 	"time"
 )
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	logger := log.Default()
+	logger := log.New(os.Stdout, "S>> ", log.Lshortfile|log.LstdFlags)
 	conf, err := configs.LoadConfigs("../../configs", "configs", "env")
 	if err != nil {
 		log.Fatal(err.Error())
